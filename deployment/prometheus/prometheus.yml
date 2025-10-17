@@ -1,0 +1,58 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - "rules/*.yml"
+
+scrape_configs:
+  # Mock AgentCore Runtime metrics
+  - job_name: 'mock-agentcore'
+    static_configs:
+      - targets: ['mock-agentcore:8000']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  # Dashboard metrics
+  - job_name: 'dashboard'
+    static_configs:
+      - targets: ['dashboard:8080']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  # Agent metrics (when running locally)
+  - job_name: 'detection-agent'
+    static_configs:
+      - targets: ['localhost:8001']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  - job_name: 'coordinator-agent'
+    static_configs:
+      - targets: ['localhost:8002']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  - job_name: 'interaction-agent'
+    static_configs:
+      - targets: ['localhost:8003']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  - job_name: 'intelligence-agent'
+    static_configs:
+      - targets: ['localhost:8004']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  # System metrics
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['localhost:9100']
+    scrape_interval: 30s
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          # - alertmanager:9093

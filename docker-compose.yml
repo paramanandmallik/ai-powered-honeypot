@@ -1,0 +1,199 @@
+services:
+  # Redis for caching and message queuing
+  redis:
+    image: redis:7-alpine
+    container_name: honeypot-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # PostgreSQL for intelligence data storage
+  postgres:
+    image: postgres:15-alpine
+    container_name: honeypot-postgres
+    environment:
+      POSTGRES_DB: honeypot_intelligence
+      POSTGRES_USER: honeypot
+      POSTGRES_PASSWORD: honeypot_dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./deployment/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U honeypot"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Prometheus for metrics collection
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: honeypot-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./deployment/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+
+  # Grafana for monitoring dashboards
+  grafana:
+    image: grafana/grafana:latest
+    container_name: honeypot-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./deployment/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./deployment/grafana/datasources:/etc/grafana/provisioning/datasources
+
+  # Mock AgentCore Runtime for local development
+  mock-agentcore:
+    build:
+      context: .
+      dockerfile: deployment/docker/Dockerfile.mock-agentcore
+    container_name: honeypot-mock-agentcore
+    ports:
+      - "8000:8000"
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - DATABASE_URL=postgresql://honeypot:honeypot_dev_password@postgres:5432/honeypot_intelligence
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./agents:/app/agents
+      - ./config:/app/config
+      - ./logs:/app/logs
+
+  # AI Agents
+  detection-agent:
+    build:
+      context: .
+      dockerfile: deployment/docker/Dockerfile.detection-agent
+    container_name: honeypot-detection-agent
+    ports:
+      - "8001:8001"
+    environment:
+      - REDIS_URL=redis://redis:6379/1
+      - DATABASE_URL=postgresql://honeypot:honeypot_dev_password@postgres:5432/honeypot_intelligence
+      - AGENTCORE_ENDPOINT=http://mock-agentcore:8000
+      - LOG_LEVEL=INFO
+      - AGENT_ID=detection-agent-1
+    depends_on:
+      - mock-agentcore
+    volumes:
+      - ./logs:/app/logs
+      - ./data:/app/data
+      - ./config:/app/config
+
+  coordinator-agent:
+    build:
+      context: .
+      dockerfile: deployment/docker/Dockerfile.coordinator-agent
+    container_name: honeypot-coordinator-agent
+    ports:
+      - "8002:8002"
+    environment:
+      - REDIS_URL=redis://redis:6379/2
+      - DATABASE_URL=postgresql://honeypot:honeypot_dev_password@postgres:5432/honeypot_intelligence
+      - AGENTCORE_ENDPOINT=http://mock-agentcore:8000
+      - LOG_LEVEL=INFO
+      - AGENT_ID=coordinator-agent-1
+    depends_on:
+      - mock-agentcore
+    volumes:
+      - ./logs:/app/logs
+      - ./data:/app/data
+      - ./config:/app/config
+
+  interaction-agent:
+    build:
+      context: .
+      dockerfile: deployment/docker/Dockerfile.interaction-agent
+    container_name: honeypot-interaction-agent
+    ports:
+      - "8003:8003"
+    environment:
+      - REDIS_URL=redis://redis:6379/3
+      - DATABASE_URL=postgresql://honeypot:honeypot_dev_password@postgres:5432/honeypot_intelligence
+      - AGENTCORE_ENDPOINT=http://mock-agentcore:8000
+      - LOG_LEVEL=INFO
+      - AGENT_ID=interaction-agent-1
+    depends_on:
+      - mock-agentcore
+    volumes:
+      - ./logs:/app/logs
+      - ./data:/app/data
+      - ./config:/app/config
+
+  intelligence-agent:
+    build:
+      context: .
+      dockerfile: deployment/docker/Dockerfile.intelligence-agent
+    container_name: honeypot-intelligence-agent
+    ports:
+      - "8004:8004"
+    environment:
+      - REDIS_URL=redis://redis:6379/4
+      - DATABASE_URL=postgresql://honeypot:honeypot_dev_password@postgres:5432/honeypot_intelligence
+      - AGENTCORE_ENDPOINT=http://mock-agentcore:8000
+      - LOG_LEVEL=INFO
+      - AGENT_ID=intelligence-agent-1
+    depends_on:
+      - mock-agentcore
+    volumes:
+      - ./logs:/app/logs
+      - ./data:/app/data
+      - ./config:/app/config
+
+  # Management Dashboard
+  dashboard:
+    build:
+      context: .
+      dockerfile: deployment/docker/Dockerfile.dashboard
+    container_name: honeypot-dashboard
+    ports:
+      - "8080:8080"
+    environment:
+      - AGENTCORE_ENDPOINT=http://mock-agentcore:8000
+      - DATABASE_URL=postgresql://honeypot:honeypot_dev_password@postgres:5432/honeypot_intelligence
+      - REDIS_URL=redis://redis:6379/0
+      - DETECTION_AGENT_ENDPOINT=http://detection-agent:8001
+      - COORDINATOR_AGENT_ENDPOINT=http://coordinator-agent:8002
+      - INTERACTION_AGENT_ENDPOINT=http://interaction-agent:8003
+      - INTELLIGENCE_AGENT_ENDPOINT=http://intelligence-agent:8004
+    depends_on:
+      - mock-agentcore
+      - detection-agent
+      - coordinator-agent
+      - interaction-agent
+      - intelligence-agent
+      - postgres
+      - redis
+    volumes:
+      - ./management:/app/management
+      - ./static:/app/static
+
+volumes:
+  redis_data:
+  postgres_data:
+  prometheus_data:
+  grafana_data:

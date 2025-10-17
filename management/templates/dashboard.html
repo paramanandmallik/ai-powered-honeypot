@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Honeypot Management Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .dashboard-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 0;
+        }
+        .metric-card {
+            border-left: 4px solid #007bff;
+            transition: transform 0.2s;
+        }
+        .metric-card:hover {
+            transform: translateY(-2px);
+        }
+        .honeypot-card {
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status-active { border-left: 4px solid #28a745; }
+        .status-creating { border-left: 4px solid #ffc107; }
+        .status-destroying { border-left: 4px solid #dc3545; }
+        .status-inactive { border-left: 4px solid #6c757d; }
+        .status-error { border-left: 4px solid #dc3545; }
+        
+        .interaction-log {
+            max-height: 400px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            border-radius: 4px;
+            padding: 1rem;
+        }
+        .alert-panel {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .websocket-status {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+        }
+        
+        .interaction-timeline {
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+        
+        .interaction-item {
+            transition: all 0.3s ease;
+            border-radius: 0.375rem;
+            background: #f8f9fa;
+        }
+        
+        .interaction-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .timeline-container {
+            position: relative;
+        }
+        
+        .timeline-container::before {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, #007bff, #6c757d);
+        }
+        
+        .threat-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        
+        .threat-critical { background-color: #dc3545; }
+        .threat-high { background-color: #fd7e14; }
+        .threat-medium { background-color: #ffc107; }
+        .threat-low { background-color: #28a745; }
+        
+        .agentcore-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        
+        .status-healthy { background-color: #28a745; }
+        .status-warning { background-color: #ffc107; }
+        .status-error { background-color: #dc3545; }
+        
+        .metric-trend {
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .trend-up { color: #28a745; }
+        .trend-down { color: #dc3545; }
+        .trend-stable { color: #6c757d; }
+    </style>
+</head>
+<body>
+    <!-- WebSocket Connection Status -->
+    <div id="websocket-status" class="websocket-status">
+        <span class="badge bg-secondary">
+            <i class="fas fa-circle" id="connection-indicator"></i>
+            <span id="connection-text">Connecting...</span>
+        </span>
+    </div>
+
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        <div class="container-fluid">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h1><i class="fas fa-shield-alt"></i> AI Honeypot Management Dashboard</h1>
+                    <p class="mb-0">Real-time monitoring and management for AI-powered honeypot system</p>
+                </div>
+                <div class="col-md-6 text-end">
+                    <button class="btn btn-outline-light me-2" onclick="refreshDashboard()">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                    <button class="btn btn-danger" onclick="emergencyShutdown()">
+                        <i class="fas fa-exclamation-triangle"></i> Emergency Shutdown
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid mt-4">
+        <!-- System Metrics Row -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card metric-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="card-title text-muted">Total Honeypots</h6>
+                                <h3 id="total-honeypots">0</h3>
+                            </div>
+                            <div class="text-primary">
+                                <i class="fas fa-server fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card metric-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="card-title text-muted">Active Engagements</h6>
+                                <h3 id="active-engagements">0</h3>
+                            </div>
+                            <div class="text-success">
+                                <i class="fas fa-users fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card metric-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="card-title text-muted">Total Interactions</h6>
+                                <h3 id="total-interactions">0</h3>
+                            </div>
+                            <div class="text-info">
+                                <i class="fas fa-comments fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card metric-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="card-title text-muted">Active Alerts</h6>
+                                <h3 id="active-alerts">0</h3>
+                            </div>
+                            <div class="text-warning">
+                                <i class="fas fa-exclamation-circle fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-chart-line"></i> System Performance</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="performance-chart" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-chart-pie"></i> Honeypot Distribution</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="honeypot-chart" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-cogs"></i> AgentCore Runtime</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="agentcore-chart" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Real-time Interaction Visualization -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5><i class="fas fa-eye"></i> Real-time Attacker Interactions</h5>
+                        <div class="btn-group" role="group">
+                            <button class="btn btn-sm btn-outline-primary" onclick="toggleInteractionView('timeline')">Timeline</button>
+                            <button class="btn btn-sm btn-outline-primary" onclick="toggleInteractionView('map')">Geographic</button>
+                            <button class="btn btn-sm btn-outline-primary" onclick="toggleInteractionView('threat')">Threat Level</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="interaction-visualization">
+                            <!-- Real-time interaction visualization will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Row -->
+        <div class="row">
+            <!-- Honeypots Panel -->
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5><i class="fas fa-server"></i> Active Honeypots</h5>
+                        <button class="btn btn-primary btn-sm" onclick="showCreateHoneypotModal()">
+                            <i class="fas fa-plus"></i> Create Honeypot
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div id="honeypots-container">
+                            <!-- Honeypots will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Interactions -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5><i class="fas fa-history"></i> Recent Attacker Interactions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="interactions-log" class="interaction-log">
+                            <!-- Interactions will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-md-4">
+                <!-- System Health -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5><i class="fas fa-heartbeat"></i> System Health</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="system-health">
+                            <!-- System health will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Alerts -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-bell"></i> Active Alerts</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="alerts-panel" class="alert-panel">
+                            <!-- Alerts will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Honeypot Modal -->
+    <div class="modal fade" id="createHoneypotModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create New Honeypot</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="create-honeypot-form">
+                        <div class="mb-3">
+                            <label for="honeypot-type" class="form-label">Honeypot Type</label>
+                            <select class="form-select" id="honeypot-type" required>
+                                <option value="">Select type...</option>
+                                <option value="web_admin">Web Admin Portal</option>
+                                <option value="ssh">SSH Server</option>
+                                <option value="database">Database</option>
+                                <option value="file_share">File Share</option>
+                                <option value="email">Email Server</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="honeypot-port" class="form-label">Port</label>
+                            <input type="number" class="form-control" id="honeypot-port" placeholder="8080">
+                        </div>
+                        <div class="mb-3">
+                            <label for="honeypot-description" class="form-label">Description</label>
+                            <textarea class="form-control" id="honeypot-description" rows="3" placeholder="Optional description"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="createHoneypot()">Create Honeypot</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Global variables
+        let websocket = null;
+        let performanceChart = null;
+        let honeypotChart = null;
+        let isConnected = false;
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeWebSocket();
+            initializeCharts();
+            loadDashboardData();
+            
+            // Auto-refresh every 30 seconds
+            setInterval(loadDashboardData, 30000);
+        });
+
+        // WebSocket connection
+        function initializeWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws`;
+            
+            websocket = new WebSocket(wsUrl);
+            
+            websocket.onopen = function(event) {
+                isConnected = true;
+                updateConnectionStatus('connected');
+                console.log('WebSocket connected');
+            };
+            
+            websocket.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                handleWebSocketMessage(data);
+            };
+            
+            websocket.onclose = function(event) {
+                isConnected = false;
+                updateConnectionStatus('disconnected');
+                console.log('WebSocket disconnected');
+                
+                // Attempt to reconnect after 5 seconds
+                setTimeout(initializeWebSocket, 5000);
+            };
+            
+            websocket.onerror = function(error) {
+                console.error('WebSocket error:', error);
+                updateConnectionStatus('error');
+            };
+        }
+
+        function updateConnectionStatus(status) {
+            const indicator = document.getElementById('connection-indicator');
+            const text = document.getElementById('connection-text');
+            
+            switch(status) {
+                case 'connected':
+                    indicator.className = 'fas fa-circle text-success';
+                    text.textContent = 'Connected';
+                    break;
+                case 'disconnected':
+                    indicator.className = 'fas fa-circle text-danger';
+                    text.textContent = 'Disconnected';
+                    break;
+                case 'error':
+                    indicator.className = 'fas fa-circle text-warning';
+                    text.textContent = 'Error';
+                    break;
+                default:
+                    indicator.className = 'fas fa-circle text-secondary';
+                    text.textContent = 'Connecting...';
+            }
+        }
+
+        function handleWebSocketMessage(data) {
+            if (data.type === 'system_update') {
+                updateMetrics(data);
+                updateAgentCoreChart(data.agentcore_metrics);
+            } else if (data.type === 'emergency_shutdown') {
+                showAlert('Emergency shutdown initiated: ' + data.reason, 'danger');
+            } else if (data.type === 'high_priority_alert') {
+                showHighPriorityAlert(data.alert, data.interaction);
+            } else if (data.type === 'new_interaction') {
+                updateInteractionVisualization(data.interaction);
+            }
+        }
+
+        function updateAgentCoreChart(agentcoreMetrics) {
+            if (agentcoreMetrics && agentcoreMetrics.agent_instances) {
+                const instances = agentcoreMetrics.agent_instances;
+                const data = [
+                    instances.detection?.count || 0,
+                    instances.coordinator?.count || 0,
+                    instances.interaction?.count || 0,
+                    instances.intelligence?.count || 0
+                ];
+                
+                agentcoreChart.data.datasets[0].data = data;
+                agentcoreChart.update();
+            }
+        }
+
+        function showHighPriorityAlert(alert, interaction) {
+            // Show prominent alert notification
+            const alertHtml = `
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <h6><i class="fas fa-exclamation-triangle"></i> ${alert.title}</h6>
+                    <p>${alert.description}</p>
+                    <small>Attacker IP: ${interaction.attacker_ip} | Honeypot: ${interaction.honeypot_type}</small>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            
+            // Add to alerts panel
+            const alertsPanel = document.getElementById('alerts-panel');
+            alertsPanel.insertAdjacentHTML('afterbegin', alertHtml);
+            
+            // Play alert sound (if enabled)
+            playAlertSound();
+        }
+
+        function updateInteractionVisualization(interaction) {
+            // Update real-time interaction visualization
+            const container = document.getElementById('interaction-visualization');
+            
+            const interactionHtml = `
+                <div class="interaction-item mb-2 p-2 border-start border-3 border-${getThreatScoreColor(interaction.threat_score)} fade-in">
+                    <div class="d-flex justify-content-between">
+                        <strong>${interaction.honeypot_type.toUpperCase()}</strong>
+                        <small class="text-muted">${new Date(interaction.timestamp).toLocaleTimeString()}</small>
+                    </div>
+                    <div class="text-muted small">IP: ${interaction.attacker_ip}</div>
+                    <div class="font-monospace small">${interaction.command}</div>
+                    <div class="d-flex justify-content-between mt-1">
+                        <span class="badge bg-${getThreatScoreColor(interaction.threat_score)}">
+                            Threat: ${interaction.threat_score.toFixed(2)}
+                        </span>
+                        ${interaction.mitre_techniques.length > 0 ? 
+                            `<span class="badge bg-info">${interaction.mitre_techniques.join(', ')}</span>` : ''}
+                    </div>
+                </div>
+            `;
+            
+            container.insertAdjacentHTML('afterbegin', interactionHtml);
+            
+            // Keep only last 20 interactions visible
+            const items = container.querySelectorAll('.interaction-item');
+            if (items.length > 20) {
+                items[items.length - 1].remove();
+            }
+        }
+
+        function toggleInteractionView(viewType) {
+            // Toggle between different interaction visualization views
+            const container = document.getElementById('interaction-visualization');
+            
+            if (viewType === 'timeline') {
+                loadTimelineView();
+            } else if (viewType === 'map') {
+                loadGeographicView();
+            } else if (viewType === 'threat') {
+                loadThreatLevelView();
+            }
+        }
+
+        function loadTimelineView() {
+            // Load timeline-based interaction view
+            document.getElementById('interaction-visualization').innerHTML = `
+                <div class="timeline-container">
+                    <div id="interaction-timeline" class="interaction-timeline">
+                        <!-- Timeline interactions will be loaded here -->
+                    </div>
+                </div>
+            `;
+            loadDashboardData(); // Refresh data
+        }
+
+        function loadGeographicView() {
+            // Load geographic-based interaction view
+            document.getElementById('interaction-visualization').innerHTML = `
+                <div class="map-container">
+                    <div id="interaction-map" style="height: 400px;">
+                        <!-- Geographic visualization would go here -->
+                        <div class="d-flex align-items-center justify-content-center h-100">
+                            <div class="text-muted">
+                                <i class="fas fa-globe fa-3x mb-3"></i>
+                                <p>Geographic visualization requires mapping service integration</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function loadThreatLevelView() {
+            // Load threat level-based interaction view
+            document.getElementById('interaction-visualization').innerHTML = `
+                <div class="threat-container">
+                    <div id="threat-level-chart" style="height: 400px;">
+                        <!-- Threat level chart would go here -->
+                        <canvas id="threat-chart"></canvas>
+                    </div>
+                </div>
+            `;
+            initializeThreatChart();
+        }
+
+        function initializeThreatChart() {
+            const ctx = document.getElementById('threat-chart').getContext('2d');
+            new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Threat Interactions',
+                        data: [],
+                        backgroundColor: 'rgba(255, 99, 132, 0.6)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            type: 'time',
+                            title: {
+                                display: true,
+                                text: 'Time'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Threat Score'
+                            },
+                            min: 0,
+                            max: 1
+                        }
+                    }
+                }
+            });
+        }
+
+        function playAlertSound() {
+            // Play alert sound if audio is enabled
+            try {
+                const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT');
+                audio.play().catch(() => {
+                    // Ignore audio play errors (user interaction required)
+                });
+            } catch (e) {
+                // Ignore audio errors
+            }
+        }
+
+        // Initialize charts
+        function initializeCharts() {
+            // Performance Chart
+            const perfCtx = document.getElementById('performance-chart').getContext('2d');
+            performanceChart = new Chart(perfCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'CPU Usage (%)',
+                        data: [],
+                        borderColor: 'rgb(75, 192, 192)',
+                        tension: 0.1
+                    }, {
+                        label: 'Memory Usage (%)',
+                        data: [],
+                        borderColor: 'rgb(255, 99, 132)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+
+            // Honeypot Chart
+            const honeypotCtx = document.getElementById('honeypot-chart').getContext('2d');
+            honeypotChart = new Chart(honeypotCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Web Admin', 'SSH', 'Database', 'File Share', 'Email'],
+                    datasets: [{
+                        data: [0, 0, 0, 0, 0],
+                        backgroundColor: [
+                            '#FF6384',
+                            '#36A2EB',
+                            '#FFCE56',
+                            '#4BC0C0',
+                            '#9966FF'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // AgentCore Runtime Chart
+            const agentcoreCtx = document.getElementById('agentcore-chart').getContext('2d');
+            agentcoreChart = new Chart(agentcoreCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Detection', 'Coordinator', 'Interaction', 'Intelligence'],
+                    datasets: [{
+                        label: 'Agent Instances',
+                        data: [0, 0, 0, 0],
+                        backgroundColor: [
+                            '#FF6384',
+                            '#36A2EB',
+                            '#FFCE56',
+                            '#4BC0C0'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Load dashboard data
+        async function loadDashboardData() {
+            try {
+                // Load system status
+                const statusResponse = await fetch('/api/status');
+                const status = await statusResponse.json();
+                updateSystemStatus(status);
+
+                // Load honeypots
+                const honeypotsResponse = await fetch('/api/honeypots');
+                const honeypots = await honeypotsResponse.json();
+                updateHoneypots(honeypots);
+
+                // Load metrics
+                const metricsResponse = await fetch('/api/metrics');
+                const metrics = await metricsResponse.json();
+                updateCharts(metrics);
+
+                // Load interactions
+                const interactionsResponse = await fetch('/api/interactions');
+                const interactions = await interactionsResponse.json();
+                updateInteractions(interactions);
+
+                // Load alerts
+                const alertsResponse = await fetch('/api/alerts');
+                const alerts = await alertsResponse.json();
+                updateAlerts(alerts);
+
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                showAlert('Failed to load dashboard data', 'danger');
+            }
+        }
+
+        function updateSystemStatus(status) {
+            document.getElementById('total-honeypots').textContent = status.total_honeypots || 0;
+            document.getElementById('active-engagements').textContent = status.active_honeypots || 0;
+            document.getElementById('total-interactions').textContent = status.total_interactions || 0;
+            document.getElementById('active-alerts').textContent = status.active_alerts || 0;
+        }
+
+        function updateMetrics(data) {
+            document.getElementById('total-honeypots').textContent = data.honeypots || 0;
+            document.getElementById('active-engagements').textContent = data.active_honeypots || 0;
+            document.getElementById('active-alerts').textContent = data.alerts || 0;
+        }
+
+        function updateHoneypots(honeypots) {
+            const container = document.getElementById('honeypots-container');
+            
+            if (honeypots.length === 0) {
+                container.innerHTML = '<p class="text-muted">No active honeypots</p>';
+                return;
+            }
+
+            let html = '';
+            honeypots.forEach(honeypot => {
+                const statusClass = `status-${honeypot.status}`;
+                const statusIcon = getStatusIcon(honeypot.status);
+                
+                html += `
+                    <div class="honeypot-card card mb-3 ${statusClass}">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <h6 class="card-title">
+                                        <i class="${statusIcon}"></i>
+                                        ${honeypot.honeypot_type.toUpperCase()} - ${honeypot.honeypot_id.substring(0, 8)}
+                                    </h6>
+                                    <p class="card-text">
+                                        <small class="text-muted">
+                                            Created: ${new Date(honeypot.created_at).toLocaleString()}
+                                            ${honeypot.last_activity ? `| Last Activity: ${new Date(honeypot.last_activity).toLocaleString()}` : ''}
+                                        </small>
+                                    </p>
+                                    <div class="d-flex gap-3">
+                                        <span class="badge bg-info">Attackers: ${honeypot.attacker_count}</span>
+                                        <span class="badge bg-secondary">Interactions: ${honeypot.interaction_count}</span>
+                                        <span class="badge bg-${getThreatLevelColor(honeypot.threat_level)}">
+                                            Threat: ${honeypot.threat_level.toUpperCase()}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <div class="btn-group" role="group">
+                                        <button class="btn btn-sm btn-outline-primary" onclick="viewHoneypot('${honeypot.honeypot_id}')">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-warning" onclick="restartHoneypot('${honeypot.honeypot_id}')">
+                                            <i class="fas fa-redo"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" onclick="destroyHoneypot('${honeypot.honeypot_id}')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+
+            // Update honeypot distribution chart
+            updateHoneypotChart(honeypots);
+        }
+
+        function updateCharts(metrics) {
+            if (metrics.historical_data && metrics.historical_data.length > 0) {
+                const labels = metrics.historical_data.map(m => new Date(m.timestamp).toLocaleTimeString());
+                const cpuData = metrics.historical_data.map(m => m.cpu_usage);
+                const memoryData = metrics.historical_data.map(m => m.memory_usage);
+
+                performanceChart.data.labels = labels;
+                performanceChart.data.datasets[0].data = cpuData;
+                performanceChart.data.datasets[1].data = memoryData;
+                performanceChart.update();
+            }
+        }
+
+        function updateHoneypotChart(honeypots) {
+            const typeCounts = {
+                'web_admin': 0,
+                'ssh': 0,
+                'database': 0,
+                'file_share': 0,
+                'email': 0
+            };
+
+            honeypots.forEach(honeypot => {
+                if (typeCounts.hasOwnProperty(honeypot.honeypot_type)) {
+                    typeCounts[honeypot.honeypot_type]++;
+                }
+            });
+
+            honeypotChart.data.datasets[0].data = Object.values(typeCounts);
+            honeypotChart.update();
+        }
+
+        function updateInteractions(interactions) {
+            const container = document.getElementById('interactions-log');
+            
+            if (interactions.length === 0) {
+                container.innerHTML = '<p class="text-muted">No recent interactions</p>';
+                return;
+            }
+
+            let html = '';
+            interactions.slice(-20).reverse().forEach(interaction => {
+                const threatColor = getThreatScoreColor(interaction.threat_score);
+                html += `
+                    <div class="mb-2 p-2 border-start border-3 border-${threatColor}">
+                        <div class="d-flex justify-content-between">
+                            <strong>${interaction.honeypot_type.toUpperCase()}</strong>
+                            <small class="text-muted">${new Date(interaction.timestamp).toLocaleString()}</small>
+                        </div>
+                        <div class="text-muted small">IP: ${interaction.attacker_ip}</div>
+                        <div class="font-monospace small">${interaction.command}</div>
+                        <div class="d-flex justify-content-between mt-1">
+                            <span class="badge bg-${threatColor}">Threat: ${interaction.threat_score.toFixed(2)}</span>
+                            ${interaction.mitre_techniques.length > 0 ? 
+                                `<span class="badge bg-info">${interaction.mitre_techniques.join(', ')}</span>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        function updateAlerts(alerts) {
+            const container = document.getElementById('alerts-panel');
+            
+            if (alerts.length === 0) {
+                container.innerHTML = '<p class="text-muted">No active alerts</p>';
+                return;
+            }
+
+            let html = '';
+            alerts.forEach(alert => {
+                const severityColor = getSeverityColor(alert.severity);
+                html += `
+                    <div class="alert alert-${severityColor} alert-dismissible fade show" role="alert">
+                        <strong>${alert.title}</strong>
+                        <p class="mb-1">${alert.description}</p>
+                        <small class="text-muted">${new Date(alert.timestamp).toLocaleString()}</small>
+                        <button type="button" class="btn-close" onclick="dismissAlert('${alert.alert_id}')"></button>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        // Honeypot management functions
+        function showCreateHoneypotModal() {
+            const modal = new bootstrap.Modal(document.getElementById('createHoneypotModal'));
+            modal.show();
+        }
+
+        async function createHoneypot() {
+            const type = document.getElementById('honeypot-type').value;
+            const port = document.getElementById('honeypot-port').value;
+            const description = document.getElementById('honeypot-description').value;
+
+            if (!type) {
+                showAlert('Please select a honeypot type', 'warning');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/honeypots', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        honeypot_type: type,
+                        config: {
+                            port: port ? parseInt(port) : undefined,
+                            description: description
+                        }
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert('Honeypot creation initiated', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('createHoneypotModal')).hide();
+                    document.getElementById('create-honeypot-form').reset();
+                    loadDashboardData();
+                } else {
+                    showAlert('Failed to create honeypot: ' + result.error, 'danger');
+                }
+            } catch (error) {
+                showAlert('Error creating honeypot: ' + error.message, 'danger');
+            }
+        }
+
+        async function destroyHoneypot(honeypotId) {
+            if (!confirm('Are you sure you want to destroy this honeypot?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/honeypots/${honeypotId}`, {
+                    method: 'DELETE'
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert('Honeypot destruction initiated', 'success');
+                    loadDashboardData();
+                } else {
+                    showAlert('Failed to destroy honeypot: ' + result.error, 'danger');
+                }
+            } catch (error) {
+                showAlert('Error destroying honeypot: ' + error.message, 'danger');
+            }
+        }
+
+        async function restartHoneypot(honeypotId) {
+            try {
+                const response = await fetch(`/api/honeypots/${honeypotId}/action`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action_type: 'restart'
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert('Honeypot restart initiated', 'success');
+                    loadDashboardData();
+                } else {
+                    showAlert('Failed to restart honeypot: ' + result.error, 'danger');
+                }
+            } catch (error) {
+                showAlert('Error restarting honeypot: ' + error.message, 'danger');
+            }
+        }
+
+        function viewHoneypot(honeypotId) {
+            // Implementation for viewing honeypot details
+            showAlert('Honeypot details view not implemented yet', 'info');
+        }
+
+        async function emergencyShutdown() {
+            const reason = prompt('Enter reason for emergency shutdown:');
+            if (!reason) return;
+
+            if (!confirm('Are you sure you want to initiate emergency shutdown?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/emergency/shutdown', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        reason: reason
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert('Emergency shutdown initiated', 'warning');
+                } else {
+                    showAlert('Failed to initiate emergency shutdown: ' + result.error, 'danger');
+                }
+            } catch (error) {
+                showAlert('Error initiating emergency shutdown: ' + error.message, 'danger');
+            }
+        }
+
+        function refreshDashboard() {
+            loadDashboardData();
+            showAlert('Dashboard refreshed', 'info');
+        }
+
+        // Utility functions
+        function getStatusIcon(status) {
+            switch(status) {
+                case 'active': return 'fas fa-circle text-success';
+                case 'creating': return 'fas fa-spinner text-warning';
+                case 'destroying': return 'fas fa-times-circle text-danger';
+                case 'inactive': return 'fas fa-circle text-secondary';
+                case 'error': return 'fas fa-exclamation-circle text-danger';
+                default: return 'fas fa-circle text-secondary';
+            }
+        }
+
+        function getThreatLevelColor(level) {
+            switch(level) {
+                case 'high': return 'danger';
+                case 'medium': return 'warning';
+                case 'low': return 'success';
+                default: return 'secondary';
+            }
+        }
+
+        function getThreatScoreColor(score) {
+            if (score >= 0.8) return 'danger';
+            if (score >= 0.5) return 'warning';
+            return 'success';
+        }
+
+        function getSeverityColor(severity) {
+            switch(severity) {
+                case 'critical': return 'danger';
+                case 'high': return 'warning';
+                case 'medium': return 'info';
+                case 'low': return 'secondary';
+                default: return 'secondary';
+            }
+        }
+
+        function showAlert(message, type) {
+            const alertHtml = `
+                <div class="alert alert-${type} alert-dismissible fade show position-fixed" 
+                     style="top: 70px; right: 20px; z-index: 1050; min-width: 300px;" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', alertHtml);
+            
+            // Auto-dismiss after 5 seconds
+            setTimeout(() => {
+                const alerts = document.querySelectorAll('.alert');
+                if (alerts.length > 0) {
+                    alerts[alerts.length - 1].remove();
+                }
+            }, 5000);
+        }
+
+        function dismissAlert(alertId) {
+            // Implementation for dismissing specific alerts
+            console.log('Dismissing alert:', alertId);
+        }
+    </script>
+</body>
+</html>

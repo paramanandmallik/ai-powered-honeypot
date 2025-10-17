@@ -1,0 +1,232 @@
+{
+  "analysis_id": "perf-analysis-1760704826",
+  "timestamp": "2025-10-17T12:40:26.773511",
+  "overall_performance_score": 80.19617934338457,
+  "profiles": [
+    {
+      "component": "system",
+      "metric": "cpu_usage",
+      "current_value": 23.416666666666664,
+      "baseline_value": 19.0,
+      "target_value": 70.0,
+      "unit": "%",
+      "trend": "degrading",
+      "bottleneck_score": 0,
+      "optimization_potential": 0
+    },
+    {
+      "component": "system",
+      "metric": "memory_usage",
+      "current_value": 76.30833333333334,
+      "baseline_value": 76.6,
+      "target_value": 80.0,
+      "unit": "%",
+      "trend": "stable",
+      "bottleneck_score": 40.77083333333334,
+      "optimization_potential": 36.30833333333334
+    },
+    {
+      "component": "system",
+      "metric": "disk_io_rate",
+      "current_value": 1.5642045454545455,
+      "baseline_value": null,
+      "target_value": 100.0,
+      "unit": "MB/s",
+      "trend": "stable",
+      "bottleneck_score": 0.7821022727272727,
+      "optimization_potential": 0.39105113636363636
+    },
+    {
+      "component": "agentcore",
+      "metric": "response_time",
+      "current_value": 1.9137779871622722,
+      "baseline_value": 5.646308263142903,
+      "target_value": 1000.0,
+      "unit": "ms",
+      "trend": "stable",
+      "bottleneck_score": 0,
+      "optimization_potential": 0
+    },
+    {
+      "component": "agentcore",
+      "metric": "success_rate",
+      "current_value": 100.0,
+      "baseline_value": null,
+      "target_value": 99.0,
+      "unit": "%",
+      "trend": "stable",
+      "bottleneck_score": 0,
+      "optimization_potential": 0
+    },
+    {
+      "component": "detection",
+      "metric": "response_time",
+      "current_value": 1.9031842549641926,
+      "baseline_value": 5.646308263142903,
+      "target_value": 1000.0,
+      "unit": "ms",
+      "trend": "stable",
+      "bottleneck_score": 0,
+      "optimization_potential": 0
+    },
+    {
+      "component": "detection",
+      "metric": "success_rate",
+      "current_value": 100.0,
+      "baseline_value": null,
+      "target_value": 99.0,
+      "unit": "%",
+      "trend": "stable",
+      "bottleneck_score": 0,
+      "optimization_potential": 0
+    },
+    {
+      "component": "coordinator",
+      "metric": "response_time",
+      "current_value": 1.8423398335774739,
+      "baseline_value": 5.646308263142903,
+      "target_value": 1000.0,
+      "unit": "ms",
+      "trend": "stable",
+      "bottleneck_score": 0,
+      "optimization_potential": 0
+    },
+    {
+      "component": "coordinator",
+      "metric": "success_rate",
+      "current_value": 100.0,
+      "baseline_value": null,
+      "target_value": 99.0,
+      "unit": "%",
+      "trend": "stable",
+      "bottleneck_score": 0,
+      "optimization_potential": 0
+    },
+    {
+      "component": "interaction",
+      "metric": "response_time",
+      "current_value": 1.8424272537231445,
+      "baseline_value": 5.646308263142903,
+      "target_value": 1000.0,
+      "unit": "ms",
+      "trend": "stable",
+      "bottleneck_score": 0,
+      "optimization_potential": 0
+    },
+    {
+      "component": "interaction",
+      "metric": "success_rate",
+      "current_value": 100.0,
+      "baseline_value": null,
+      "target_value": 99.0,
+      "unit": "%",
+      "trend": "stable",
+      "bottleneck_score": 0,
+      "optimization_potential": 0
+    },
+    {
+      "component": "intelligence",
+      "metric": "response_time",
+      "current_value": 3.3281326293945312,
+      "baseline_value": 5.646308263142903,
+      "target_value": 1000.0,
+      "unit": "ms",
+      "trend": "improving",
+      "bottleneck_score": 0,
+      "optimization_potential": 0
+    },
+    {
+      "component": "intelligence",
+      "metric": "success_rate",
+      "current_value": 100.0,
+      "baseline_value": null,
+      "target_value": 99.0,
+      "unit": "%",
+      "trend": "stable",
+      "bottleneck_score": 0,
+      "optimization_potential": 0
+    },
+    {
+      "component": "redis",
+      "metric": "response_time",
+      "current_value": 6.314945220947266,
+      "baseline_value": null,
+      "target_value": 10.0,
+      "unit": "ms",
+      "trend": "stable",
+      "bottleneck_score": 6.574726104736328,
+      "optimization_potential": 4.314945220947266
+    },
+    {
+      "component": "postgres",
+      "metric": "response_time",
+      "current_value": 32.53512382507324,
+      "baseline_value": null,
+      "target_value": 50.0,
+      "unit": "ms",
+      "trend": "stable",
+      "bottleneck_score": 15.070247650146484,
+      "optimization_potential": 22.535123825073242
+    },
+    {
+      "component": "network",
+      "metric": "throughput",
+      "current_value": 0.3583984375,
+      "baseline_value": null,
+      "target_value": 100.0,
+      "unit": "MB/s",
+      "trend": "stable",
+      "bottleneck_score": 0.716796875,
+      "optimization_potential": 0.3583984375
+    },
+    {
+      "component": "network",
+      "metric": "latency",
+      "current_value": 2.805662155151367,
+      "baseline_value": null,
+      "target_value": 50.0,
+      "unit": "ms",
+      "trend": "degrading",
+      "bottleneck_score": 0,
+      "optimization_potential": 0
+    }
+  ],
+  "bottlenecks": [],
+  "recommendations": [
+    {
+      "priority": "low",
+      "category": "configuration",
+      "title": "General System Optimization",
+      "description": "Apply general system optimization techniques",
+      "expected_improvement": "5-15% overall performance improvement",
+      "implementation_effort": "low",
+      "steps": [
+        "Enable system performance monitoring",
+        "Configure log rotation and cleanup",
+        "Optimize Docker container resource limits",
+        "Implement automated performance alerting"
+      ]
+    }
+  ],
+  "system_metrics": {
+    "cpu": {
+      "count": 10,
+      "usage_percent": 26.1,
+      "load_avg": [
+        13.63525390625,
+        11.2490234375,
+        11.841796875
+      ]
+    },
+    "memory": {
+      "total_gb": 32.0,
+      "available_gb": 7.5415496826171875,
+      "usage_percent": 76.4
+    },
+    "disk": {
+      "total_gb": 460.4317207336426,
+      "free_gb": 310.8951110839844,
+      "usage_percent": 2.351045402350051
+    }
+  }
+}

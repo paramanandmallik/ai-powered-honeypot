@@ -1,0 +1,379 @@
+version: '3.8'
+
+# Enhanced Local Monitoring Stack for Development
+# Comprehensive observability and debugging tools for AI Honeypot system
+
+services:
+  # Enhanced Prometheus with custom configuration and alerting
+  prometheus-dev:
+    image: prom/prometheus:latest
+    container_name: honeypot-prometheus-dev-enhanced
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus-dev.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus/rules:/etc/prometheus/rules
+      - prometheus_dev_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+      - '--web.enable-admin-api'
+      - '--storage.tsdb.retention.time=7d'
+      - '--alertmanager.url=http://alertmanager:9093'
+    networks:
+      - honeypot-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # AlertManager for handling alerts
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: honeypot-alertmanager-dev
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./prometheus/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+      - alertmanager_data:/alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+      - '--web.external-url=http://localhost:9093'
+      - '--cluster.listen-address='
+    networks:
+      - honeypot-network
+
+  # Enhanced Grafana with comprehensive dashboards
+  grafana-dev:
+    image: grafana/grafana:latest
+    container_name: honeypot-grafana-dev-enhanced
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_INSTALL_PLUGINS: grafana-clock-panel,grafana-simple-json-datasource,grafana-piechart-panel,grafana-worldmap-panel,grafana-polystat-panel
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /etc/grafana/provisioning/dashboards/honeypot-overview.json
+      GF_FEATURE_TOGGLES_ENABLE: publicDashboards
+      GF_ANALYTICS_REPORTING_ENABLED: false
+      GF_ANALYTICS_CHECK_FOR_UPDATES: false
+    volumes:
+      - grafana_dev_data:/var/lib/grafana
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./grafana/datasources:/etc/grafana/provisioning/datasources
+      - ./grafana/plugins:/var/lib/grafana/plugins
+    networks:
+      - honeypot-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Jaeger for distributed tracing with enhanced configuration
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: honeypot-jaeger-dev
+    ports:
+      - "16686:16686"  # Jaeger UI
+      - "14268:14268"  # Jaeger collector HTTP
+      - "14250:14250"  # Jaeger collector gRPC
+      - "6831:6831/udp"  # Jaeger agent UDP
+      - "6832:6832/udp"  # Jaeger agent UDP
+    environment:
+      COLLECTOR_ZIPKIN_HTTP_PORT: 9411
+      COLLECTOR_OTLP_ENABLED: true
+      LOG_LEVEL: debug
+      SPAN_STORAGE_TYPE: memory
+      MEMORY_MAX_TRACES: 50000
+    volumes:
+      - jaeger_data:/tmp
+    networks:
+      - honeypot-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:16686/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ElasticSearch for comprehensive log aggregation
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.8.0
+    container_name: honeypot-elasticsearch-dev
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+      - bootstrap.memory_lock=true
+      - cluster.name=honeypot-logs
+      - node.name=honeypot-node-1
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - honeypot-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Kibana for advanced log visualization and analysis
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.8.0
+    container_name: honeypot-kibana-dev
+    ports:
+      - "5601:5601"
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+      SERVER_NAME: honeypot-kibana
+      SERVER_HOST: 0.0.0.0
+      LOGGING_LEVEL: info
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    volumes:
+      - kibana_data:/usr/share/kibana/data
+    networks:
+      - honeypot-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5601/api/status || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Enhanced Logstash for log processing and enrichment
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.8.0
+    container_name: honeypot-logstash-dev
+    ports:
+      - "5044:5044"  # Beats input
+      - "9600:9600"  # API
+      - "5000:5000/tcp"  # TCP input
+      - "5000:5000/udp"  # UDP input
+    volumes:
+      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
+      - ./logstash/config:/usr/share/logstash/config:ro
+      - logstash_data:/usr/share/logstash/data
+    environment:
+      LS_JAVA_OPTS: "-Xmx1g -Xms1g"
+      PIPELINE_WORKERS: 2
+      LOG_LEVEL: info
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - honeypot-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9600/_node/stats || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Filebeat for log shipping from containers
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:8.8.0
+    container_name: honeypot-filebeat-dev
+    user: root
+    volumes:
+      - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - filebeat_data:/usr/share/filebeat/data
+    environment:
+      - ELASTICSEARCH_HOST=elasticsearch:9200
+      - KIBANA_HOST=kibana:5601
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - honeypot-network
+    command: ["--strict.perms=false"]
+
+  # Metricbeat for comprehensive system and application metrics
+  metricbeat:
+    image: docker.elastic.co/beats/metricbeat:8.8.0
+    container_name: honeypot-metricbeat-dev
+    user: root
+    volumes:
+      - ./metricbeat/metricbeat.yml:/usr/share/metricbeat/metricbeat.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
+      - /proc:/hostfs/proc:ro
+      - /:/hostfs:ro
+      - metricbeat_data:/usr/share/metricbeat/data
+    environment:
+      - ELASTICSEARCH_HOST=elasticsearch:9200
+      - KIBANA_HOST=kibana:5601
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - honeypot-network
+    command: ["--strict.perms=false", "--system.hostfs=/hostfs"]
+
+  # Node Exporter for detailed system metrics
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: honeypot-node-exporter-dev
+    ports:
+      - "9100:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($|/)'
+      - '--collector.textfile.directory=/host/proc/sys/fs/binfmt_misc'
+    networks:
+      - honeypot-network
+
+  # cAdvisor for container resource monitoring
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: honeypot-cadvisor-dev
+    ports:
+      - "8080:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    privileged: true
+    devices:
+      - /dev/kmsg
+    networks:
+      - honeypot-network
+
+  # Redis Exporter for Redis performance metrics
+  redis-exporter:
+    image: oliver006/redis_exporter:latest
+    container_name: honeypot-redis-exporter-dev
+    ports:
+      - "9121:9121"
+    environment:
+      REDIS_ADDR: redis://redis:6379
+      REDIS_EXPORTER_LOG_FORMAT: json
+    networks:
+      - honeypot-network
+
+  # PostgreSQL Exporter for database performance metrics
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    container_name: honeypot-postgres-exporter-dev
+    ports:
+      - "9187:9187"
+    environment:
+      DATA_SOURCE_NAME: "postgresql://honeypot:honeypot_dev_password@postgres:5432/honeypot_intelligence?sslmode=disable"
+      PG_EXPORTER_EXTEND_QUERY_PATH: /etc/postgres_exporter/queries.yaml
+    volumes:
+      - ./postgres-exporter/queries.yaml:/etc/postgres_exporter/queries.yaml:ro
+    networks:
+      - honeypot-network
+
+  # RabbitMQ Exporter for message queue metrics
+  rabbitmq-exporter:
+    image: kbudde/rabbitmq-exporter:latest
+    container_name: honeypot-rabbitmq-exporter-dev
+    ports:
+      - "9419:9419"
+    environment:
+      RABBIT_URL: http://rabbitmq:15672
+      RABBIT_USER: honeypot
+      RABBIT_PASSWORD: honeypot_dev_password
+      PUBLISH_PORT: 9419
+    networks:
+      - honeypot-network
+
+  # Jupyter Lab for data analysis and visualization
+  jupyter-analysis:
+    image: jupyter/scipy-notebook:latest
+    container_name: honeypot-jupyter-analysis-dev
+    ports:
+      - "8888:8888"
+    volumes:
+      - ../notebooks:/home/jovyan/work
+      - jupyter_data:/home/jovyan
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+      - JUPYTER_TOKEN=
+      - GRANT_SUDO=yes
+    user: root
+    networks:
+      - honeypot-network
+
+  # Portainer for container management and monitoring
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: honeypot-portainer-dev
+    ports:
+      - "9000:9000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    networks:
+      - honeypot-network
+    restart: unless-stopped
+
+  # Uptime Kuma for service monitoring
+  uptime-kuma:
+    image: louislam/uptime-kuma:latest
+    container_name: honeypot-uptime-kuma-dev
+    ports:
+      - "3001:3001"
+    volumes:
+      - uptime_kuma_data:/app/data
+    networks:
+      - honeypot-network
+    restart: unless-stopped
+
+  # Netdata for real-time performance monitoring
+  netdata:
+    image: netdata/netdata:latest
+    container_name: honeypot-netdata-dev
+    ports:
+      - "19999:19999"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - apparmor:unconfined
+    environment:
+      - DOCKER_HOST=/var/run/docker.sock
+    networks:
+      - honeypot-network
+
+volumes:
+  prometheus_dev_data:
+  alertmanager_data:
+  grafana_dev_data:
+  elasticsearch_data:
+  kibana_data:
+  logstash_data:
+  filebeat_data:
+  metricbeat_data:
+  jaeger_data:
+  jupyter_data:
+  portainer_data:
+  uptime_kuma_data:
+
+networks:
+  honeypot-network:
+    external: true

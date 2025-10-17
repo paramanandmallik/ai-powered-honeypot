@@ -1,0 +1,76 @@
+# Configuration for AI Honeypot Infrastructure Deployment
+
+environments:
+  dev:
+    description: "Development environment for testing and development"
+    region: "us-east-1"
+    database:
+      instance_type: "t3.medium"
+      multi_az: false
+      backup_retention_days: 7
+      deletion_protection: false
+    monitoring:
+      log_retention_days: 30
+      detailed_monitoring: false
+    cost_optimization:
+      enable_lifecycle_policies: true
+      use_spot_instances: false
+    
+  staging:
+    description: "Staging environment for pre-production testing"
+    region: "us-east-1"
+    database:
+      instance_type: "t3.large"
+      multi_az: true
+      backup_retention_days: 14
+      deletion_protection: true
+    monitoring:
+      log_retention_days: 90
+      detailed_monitoring: true
+    cost_optimization:
+      enable_lifecycle_policies: true
+      use_spot_instances: false
+    
+  prod:
+    description: "Production environment for live operations"
+    region: "us-east-1"
+    database:
+      instance_type: "r5.xlarge"
+      multi_az: true
+      backup_retention_days: 30
+      deletion_protection: true
+    monitoring:
+      log_retention_days: 365
+      detailed_monitoring: true
+    cost_optimization:
+      enable_lifecycle_policies: true
+      use_spot_instances: false
+
+# Common configuration across all environments
+common:
+  project_name: "ai-honeypot-agentcore"
+  owner: "SecurityTeam"
+  cost_center: "Security-Operations"
+  
+  # Network configuration
+  vpc_cidr: "10.0.0.0/16"
+  availability_zones: 3
+  
+  # Security configuration
+  enable_flow_logs: true
+  enable_encryption: true
+  enable_key_rotation: true
+  
+  # Compliance configuration
+  audit_log_retention_years: 10
+  session_data_retention_years: 7
+  intelligence_retention_years: 5
+  
+  # Performance configuration
+  api_rate_limit: 100
+  api_burst_limit: 200
+  lambda_timeout_minutes: 15
+  
+  # Alerting configuration
+  alert_email: "security-team@company.com"
+  critical_alert_phone: "+1-555-0123"

@@ -1,0 +1,208 @@
+apiVersion: agentcore.amazon.com/v1
+kind: Agent
+metadata:
+  name: ai-honeypot-coordinator-agent
+  namespace: ai-honeypot-system
+  labels:
+    app: ai-honeypot
+    component: coordinator
+    version: v1.0.0
+spec:
+  description: "AI-Powered Honeypot System - Coordinator Agent"
+  runtime:
+    type: python
+    version: "3.11"
+    entrypoint: "agents.coordinator.coordinator_agent:CoordinatorAgent"
+    framework: "strands-agents"
+  
+  resources:
+    requests:
+      memory: "1Gi"
+      cpu: "500m"
+    limits:
+      memory: "2Gi"
+      cpu: "1000m"
+  
+  scaling:
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 80
+  
+  environment:
+    - name: AWS_REGION
+      value: "us-east-1"
+    - name: LOG_LEVEL
+      value: "INFO"
+    - name: USE_MOCK_AI
+      value: "false"
+    - name: BEDROCK_MODEL_ID
+      value: "anthropic.claude-3-sonnet-20240229-v1:0"
+    - name: MAX_CONCURRENT_HONEYPOTS
+      value: "50"
+    - name: HONEYPOT_TIMEOUT_MINUTES
+      value: "60"
+    - name: AUTO_SCALING_ENABLED
+      value: "true"
+    - name: EMERGENCY_SHUTDOWN_ENABLED
+      value: "true"
+  
+  dependencies:
+    - strands-agents>=0.1.0
+    - bedrock-agentcore>=0.1.0
+    - boto3>=1.34.0
+    - fastapi>=0.104.0
+    - pydantic>=2.5.0
+    - httpx>=0.25.0
+    - anthropic>=0.25.0
+    - docker>=6.0.0
+    - kubernetes>=25.0.0
+  
+  interfaces:
+    input:
+      - name: engagement_request
+        type: json
+        schema:
+          type: object
+          properties:
+            engagement_id:
+              type: string
+            threat_data:
+              type: object
+            honeypot_types:
+              type: array
+              items:
+                type: string
+            priority:
+              type: string
+              enum: ["LOW", "MEDIUM", "HIGH", "CRITICAL"]
+      
+      - name: honeypot_management
+        type: json
+        schema:
+          type: object
+          properties:
+            action:
+              type: string
+              enum: ["CREATE", "DESTROY", "SCALE", "MONITOR"]
+            honeypot_id:
+              type: string
+            configuration:
+              type: object
+    
+    output:
+      - name: honeypot_status
+        type: json
+        schema:
+          type: object
+          properties:
+            honeypot_id:
+              type: string
+            status:
+              type: string
+              enum: ["CREATING", "ACTIVE", "SCALING", "DESTROYING", "ERROR"]
+            endpoint:
+              type: string
+            configuration:
+              type: object
+            metrics:
+              type: object
+  
+  communication:
+    protocols:
+      - http
+      - agentcore-messaging
+      - websocket
+    
+    endpoints:
+      - name: create_honeypot
+        method: POST
+        path: /honeypots
+      - name: destroy_honeypot
+        method: DELETE
+        path: /honeypots/{honeypot_id}
+      - name: get_honeypot_status
+        method: GET
+        path: /honeypots/{honeypot_id}
+      - name: list_honeypots
+        method: GET
+        path: /honeypots
+      - name: emergency_shutdown
+        method: POST
+        path: /emergency/shutdown
+      - name: system_status
+        method: GET
+        path: /status
+  
+  messaging:
+    subscriptions:
+      - topic: "engagement.decision"
+        handler: "handle_engagement_decision"
+      - topic: "honeypot.health"
+        handler: "monitor_honeypot_health"
+      - topic: "system.emergency"
+        handler: "handle_emergency"
+      - topic: "resource.scaling"
+        handler: "handle_scaling_request"
+    
+    publications:
+      - topic: "honeypot.created"
+        schema: "honeypot_status"
+      - topic: "honeypot.destroyed"
+        schema: "honeypot_status"
+      - topic: "system.alert"
+        schema: "system_alert"
+  
+  monitoring:
+    healthCheck:
+      path: /health
+      intervalSeconds: 30
+      timeoutSeconds: 10
+      failureThreshold: 3
+    
+    metrics:
+      - name: honeypots_active_total
+        type: gauge
+        description: "Number of active honeypots"
+        labels: ["honeypot_type"]
+      - name: honeypot_creation_time_seconds
+        type: histogram
+        description: "Time taken to create honeypots"
+        buckets: [5, 10, 30, 60, 120]
+      - name: resource_utilization_percent
+        type: gauge
+        description: "Resource utilization percentage"
+        labels: ["resource_type"]
+      - name: coordination_operations_total
+        type: counter
+        description: "Total coordination operations"
+        labels: ["operation_type", "status"]
+  
+  security:
+    runAsNonRoot: true
+    readOnlyRootFilesystem: false
+    allowPrivilegeEscalation: true  # Required for container management
+    capabilities:
+      add:
+        - NET_ADMIN  # Required for network management
+      drop:
+        - ALL
+  
+  persistence:
+    volumes:
+      - name: logs
+        mountPath: /app/logs
+        size: 2Gi
+        storageClass: gp3
+      - name: honeypot-configs
+        mountPath: /app/configs
+        size: 1Gi
+        storageClass: gp3
+  
+  rbac:
+    rules:
+      - apiGroups: [""]
+        resources: ["pods", "services"]
+        verbs: ["create", "delete", "get", "list", "watch"]
+      - apiGroups: ["apps"]
+        resources: ["deployments"]
+        verbs: ["create", "delete", "get", "list", "watch", "update"]

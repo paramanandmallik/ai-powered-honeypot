@@ -1,0 +1,284 @@
+Integration Test Results - 2025-10-17 14:04:25.189923
+================================================================================
+
+Test: Simple Integration Test Verification
+Path: test_integration_simple.py
+Duration: 0.57s
+Success: True
+STDOUT:
+============================= test session starts ==============================
+platform darwin -- Python 3.13.7, pytest-8.4.2, pluggy-1.6.0 -- /Users/paramdm/Drive/kiroworkspace/AgenticDeception/ai-honeypot-agentcore/venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/paramdm/Drive/kiroworkspace/AgenticDeception/ai-honeypot-agentcore
+configfile: pytest.ini
+plugins: asyncio-1.2.0, anyio-4.11.0, cov-7.0.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 2 items
+
+test_integration_simple.py::TestSimpleIntegration::test_basic_integration PASSED [ 50%]
+test_integration_simple.py::TestSimpleIntegration::test_async_operations PASSED [100%]
+
+============================== 2 passed in 0.02s ===============================
+
+----------------------------------------
+
+Test: AgentCore Messaging - Agent Registration
+Path: tests/integration/test_agentcore_messaging.py::TestAgentCoreMessaging::test_agent_registration_and_discovery
+Duration: 1.90s
+Success: False
+Error: Unknown
+STDOUT:
+============================= test session starts ==============================
+platform darwin -- Python 3.13.7, pytest-8.4.2, pluggy-1.6.0 -- /Users/paramdm/Drive/kiroworkspace/AgenticDeception/ai-honeypot-agentcore/venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/paramdm/Drive/kiroworkspace/AgenticDeception/ai-honeypot-agentcore
+configfile: pytest.ini
+plugins: asyncio-1.2.0, anyio-4.11.0, cov-7.0.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 1 item
+
+tests/integration/test_agentcore_messaging.py::TestAgentCoreMessaging::test_agent_registration_and_discovery FAILED [100%]
+
+=================================== FAILURES ===================================
+_________ TestAgentCoreMessaging.test_agent_registration_and_discovery _________
+tests/integration/test_agentcore_messaging.py:84: in test_agent_registration_and_discovery
+    message_router[agent_id] = agent.handle_message
+                               ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'DetectionAgent' object has no attribute 'handle_message'
+------------------------------ Captured log call -------------------------------
+INFO     detection_agent:base_agent.py:77 Initialized AI Honeypot Detection Agent (detection-d872b91b)
+INFO     detection_agent:detection_agent.py:145 Detection Agent initialized with confidence threshold: 0.75
+INFO     coordinator_agent:base_agent.py:77 Initialized AI Honeypot Coordinator Agent (coordinator-3762dd35)
+INFO     coordinator_agent:coordinator_agent.py:63 Coordinator Agent initialized
+INFO     interaction_agent:base_agent.py:77 Initialized AI Honeypot Interaction Agent (interaction-241a9594)
+INFO     interaction_agent:interaction_agent.py:46 Interaction Agent initialized with AI-powered interaction engine
+INFO     intelligence_agent:base_agent.py:77 Initialized AI Honeypot Intelligence Agent (intelligence-7e51806a)
+INFO     intelligence_agent:intelligence_agent.py:74 Intelligence Agent initialized with session analysis capabilities
+=============================== warnings summary ===============================
+tests/integration/test_agentcore_messaging.py::TestAgentCoreMessaging::test_agent_registration_and_discovery
+tests/integration/test_agentcore_messaging.py::TestAgentCoreMessaging::test_agent_registration_and_discovery
+tests/integration/test_agentcore_messaging.py::TestAgentCoreMessaging::test_agent_registration_and_discovery
+tests/integration/test_agentcore_messaging.py::TestAgentCoreMessaging::test_agent_registration_and_discovery
+  /Users/paramdm/Drive/kiroworkspace/AgenticDeception/ai-honeypot-agentcore/agents/base_agent.py:66: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    "last_activity": datetime.utcnow().isoformat(),
+
+tests/integration/test_agentcore_messaging.py::TestAgentCoreMessaging::test_agent_registration_and_discovery
+tests/integration/test_agentcore_messaging.py::TestAgentCoreMessaging::test_agent_registration_and_discovery
+tests/integration/test_agentcore_messaging.py::TestAgentCoreMessaging::test_agent_registration_and_discovery
+tests/integration/test_agentcore_messaging.py::TestAgentCoreMessaging::test_agent_registration_and_discovery
+  /Users/paramdm/Drive/kiroworkspace/AgenticDeception/ai-honeypot-agentcore/agents/base_agent.py:73: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    self.start_time = datetime.utcnow()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/integration/test_agentcore_messaging.py::TestAgentCoreMessaging::test_agent_registration_and_discovery
+======================== 1 failed, 8 warnings in 1.12s =========================
+
+----------------------------------------
+
+Test: AgentCore Messaging - Threat Detection Flow
+Path: tests/integration/test_agentcore_messaging.py::TestAgentCoreMessaging::test_threat_detection_messaging_flow
+Duration: 1.41s
+Success: False
+Error: Unknown
+STDOUT:
+============================= test session starts ==============================
+platform darwin -- Python 3.13.7, pytest-8.4.2, pluggy-1.6.0 -- /Users/paramdm/Drive/kiroworkspace/AgenticDeception/ai-honeypot-agentcore/venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/paramdm/Drive/kiroworkspace/AgenticDeception/ai-honeypot-agentcore
+configfile: pytest.ini
+plugins: asyncio-1.2.0, anyio-4.11.0, cov-7.0.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 1 item
+
+tests/integration/test_agentcore_messaging.py::TestAgentCoreMessaging::test_threat_detection_messaging_flow FAILED [100%]
+
+=================================== FAILURES ===================================
+_________ TestAgentCoreMessaging.test_threat_detection_messaging_flow __________
+tests/integration/test_agentcore_messaging.py:111: in test_threat_detection_messaging_flow
+    await detection_agent.send_engagement_decision(
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'DetectionAgent' object has no attribute 'send_engagement_decision'
+------------------------------ Captured log call -------------------------------
+INFO     detection_agent:base_agent.py:77 Initialized AI Honeypot Detection Agent (detection-5bebecf3)
+INFO     detection_agent:detection_agent.py:145 Detection Agent initialized with confidence threshold: 0.75
+=============================== warnings summary ===============================
+tests/integration/test_agentcore_messaging.py::TestAgentCoreMessaging::test_threat_detection_messaging_flow
+  /Users/paramdm/Drive/kiroworkspace/AgenticDeception/ai-honeypot-agentcore/agents/base_agent.py:66: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    "last_activity": datetime.utcnow().isoformat(),
+
+tests/integration/test_agentcore_messaging.py::TestAgentCoreMessaging::test_threat_detection_messaging_flow
+  /Users/paramdm/Drive/kiroworkspace/AgenticDeception/ai-honeypot-agentcore/agents/base_agent.py:73: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    self.start_time = datetime.utcnow()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/integration/test_agentcore_messaging.py::TestAgentCoreMessaging::test_threat_detection_messaging_flow
+======================== 1 failed, 2 warnings in 0.75s =========================
+
+----------------------------------------
+
+Test: Workflow Integration - Complete Threat Response
+Path: tests/integration/test_workflow_integration.py::TestWorkflowIntegration::test_complete_threat_response_workflow
+Duration: 1.83s
+Success: False
+Error: Unknown
+STDOUT:
+============================= test session starts ==============================
+platform darwin -- Python 3.13.7, pytest-8.4.2, pluggy-1.6.0 -- /Users/paramdm/Drive/kiroworkspace/AgenticDeception/ai-honeypot-agentcore/venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/paramdm/Drive/kiroworkspace/AgenticDeception/ai-honeypot-agentcore
+configfile: pytest.ini
+plugins: asyncio-1.2.0, anyio-4.11.0, cov-7.0.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 1 item
+
+tests/integration/test_workflow_integration.py::TestWorkflowIntegration::test_complete_threat_response_workflow ERROR [100%]
+
+==================================== ERRORS ====================================
+_ ERROR at setup of TestWorkflowIntegration.test_complete_threat_response_workflow _
+tests/integration/test_workflow_integration.py:35: in integrated_system
+    await coordinator_agent.start()
+agents/base_agent.py:113: in start
+    start_http_server(metrics_port)
+venv/lib/python3.13/site-packages/prometheus_client/exposition.py:241: in start_wsgi_server
+    httpd = make_server(addr, port, app, TmpServer, handler_class=_SilentHandler)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.13/3.13.7/Frameworks/Python.framework/Versions/3.13/lib/python3.13/wsgiref/simple_server.py:150: in make_server
+    server = server_class((host, port), handler_class)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.13/3.13.7/Frameworks/Python.framework/Versions/3.13/lib/python3.13/socketserver.py:457: in __init__
+    self.server_bind()
+/opt/homebrew/Cellar/python@3.13/3.13.7/Frameworks/Python.framework/Versions/3.13/lib/python3.13/wsgiref/simple_server.py:50: in server_bind
+    HTTPServer.server_bind(self)
+/opt/homebrew/Cellar/python@3.13/3.13.7/Frameworks/Python.framework/Versions/3.13/lib/python3.13/http/server.py:136: in server_bind
+    socketserver.TCPServer.server_bind(self)
+/opt/homebrew/Cellar/python@3.13/3.13.7/Frameworks/Python.framework/Versions/3.13/lib/python3.13/socketserver.py:478: in server_bind
+    self.socket.bind(self.server_address)
+E   OSError: [Errno 48] Address already in use
+------------------------------ Captured log setup ------------------------------
+INFO     detection_agent:base_agent.py:77 Initialized AI Honeypot Detection Agent (detection-245d628b)
+INFO     detection_agent:detection_agent.py:145 Detection Agent initialized with confidence threshold: 0.75
+INFO     coordinator_agent:base_agent.py:77 Initialized AI Honeypot Coordinator Agent (coordinator-34f88c5b)
+INFO     coordinator_agent:coordinator_agent.py:63 Coordinator Agent initialized
+INFO     interaction_agent:base_agent.py:77 Initialized AI Honeypot Interaction Agent (interaction-067c207e)
+INFO     interaction_agent:interaction_agent.py:46 Interaction Agent initialized with AI-powered interaction engine
+INFO     intelligence_agent:base_agent.py:77 Initialized AI Honeypot Intelligence Agent (intelligence-142e0088)
+INFO     intelligence_agent:intelligence_agent.py:74 Intelligence Agent initialized with session analysis capabilities
+INFO     detection_agent:base_agent.py:114 Metrics server started on port 9000
+INFO     detection_agent:detection_agent.py:150 Initializing Detection Agent...
+ERROR    config.agentcore_sdk:agentcore_sdk.py:70 Failed to register agent: All connection attempts failed
+WARNING  detection_agent:detection_agent.py:211 Failed to initialize AgentCore SDK, running in standalone mode: All connection attempts failed
+INFO     detection_agent:detection_agent.py:1309 Initializing threat intelligence systems...
+INFO     detection_agent:detection_agent.py:1320 Threat intelligence systems initialized
+INFO     detection_agent:detection_agent.py:167 Detection Agent initialized successfully
+INFO     detection_agent:base_agent.py:129 AI Honeypot Detection Agent started successfully
+ERROR    coordinator_agent:base_agent.py:132 Failed to start agent: [Errno 48] Address already in use
+=============================== warnings summary ===============================
+tests/integration/test_workflow_integration.py::TestWorkflowIntegration::test_complete_threat_response_workflow
+tests/integration/test_workflow_integration.py::TestWorkflowIntegration::test_complete_threat_response_workflow
+tests/integration/test_workflow_integration.py::TestWorkflowIntegration::test_complete_threat_response_workflow
+tests/integration/test_workflow_integration.py::TestWorkflowIntegration::test_complete_threat_response_workflow
+  /Users/paramdm/Drive/kiroworkspace/AgenticDeception/ai-honeypot-agentcore/agents/base_agent.py:66: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    "last_activity": datetime.utcnow().isoformat(),
+
+tests/integration/test_workflow_integration.py::TestWorkflowIntegration::test_complete_threat_response_workflow
+tests/integration/test_workflow_integration.py::TestWorkflowIntegration::test_complete_threat_response_workflow
+tests/integration/test_workflow_integration.py::TestWorkflowIntegration::test_complete_threat_response_workflow
+tests/integration/test_workflow_integration.py::TestWorkflowIntegration::test_complete_threat_response_workflow
+  /Users/paramdm/Drive/kiroworkspace/AgenticDeception/ai-honeypot-agentcore/agents/base_agent.py:73: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    self.start_time = datetime.utcnow()
+
+tests/integration/test_workflow_integration.py::TestWorkflowIntegration::test_complete_threat_response_workflow
+  /Users/paramdm/Drive/kiroworkspace/AgenticDeception/ai-honeypot-agentcore/agents/base_agent.py:120: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    self.state["started_at"] = datetime.utcnow().isoformat()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+ERROR tests/integration/test_workflow_integration.py::TestWorkflowIntegration::test_complete_threat_response_workflow
+========================= 9 warnings, 1 error in 1.26s =========================
+
+----------------------------------------
+
+Test: End-to-End - SSH Threat Lifecycle
+Path: tests/integration/test_comprehensive_e2e.py::TestComprehensiveE2E::test_complete_threat_lifecycle_ssh
+Duration: 1.68s
+Success: False
+Error: Unknown
+STDOUT:
+============================= test session starts ==============================
+platform darwin -- Python 3.13.7, pytest-8.4.2, pluggy-1.6.0 -- /Users/paramdm/Drive/kiroworkspace/AgenticDeception/ai-honeypot-agentcore/venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/paramdm/Drive/kiroworkspace/AgenticDeception/ai-honeypot-agentcore
+configfile: pytest.ini
+plugins: asyncio-1.2.0, anyio-4.11.0, cov-7.0.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 1 item
+
+tests/integration/test_comprehensive_e2e.py::TestComprehensiveE2E::test_complete_threat_lifecycle_ssh ERROR [100%]
+
+==================================== ERRORS ====================================
+__ ERROR at setup of TestComprehensiveE2E.test_complete_threat_lifecycle_ssh ___
+tests/integration/test_comprehensive_e2e.py:53: in e2e_system
+    await coordinator.start()
+agents/base_agent.py:113: in start
+    start_http_server(metrics_port)
+venv/lib/python3.13/site-packages/prometheus_client/exposition.py:241: in start_wsgi_server
+    httpd = make_server(addr, port, app, TmpServer, handler_class=_SilentHandler)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.13/3.13.7/Frameworks/Python.framework/Versions/3.13/lib/python3.13/wsgiref/simple_server.py:150: in make_server
+    server = server_class((host, port), handler_class)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.13/3.13.7/Frameworks/Python.framework/Versions/3.13/lib/python3.13/socketserver.py:457: in __init__
+    self.server_bind()
+/opt/homebrew/Cellar/python@3.13/3.13.7/Frameworks/Python.framework/Versions/3.13/lib/python3.13/wsgiref/simple_server.py:50: in server_bind
+    HTTPServer.server_bind(self)
+/opt/homebrew/Cellar/python@3.13/3.13.7/Frameworks/Python.framework/Versions/3.13/lib/python3.13/http/server.py:136: in server_bind
+    socketserver.TCPServer.server_bind(self)
+/opt/homebrew/Cellar/python@3.13/3.13.7/Frameworks/Python.framework/Versions/3.13/lib/python3.13/socketserver.py:478: in server_bind
+    self.socket.bind(self.server_address)
+E   OSError: [Errno 48] Address already in use
+------------------------------ Captured log setup ------------------------------
+INFO     detection_agent:base_agent.py:77 Initialized AI Honeypot Detection Agent (detection-0f5fab1e)
+INFO     detection_agent:detection_agent.py:145 Detection Agent initialized with confidence threshold: 0.75
+INFO     coordinator_agent:base_agent.py:77 Initialized AI Honeypot Coordinator Agent (coordinator-eb50e6dd)
+INFO     coordinator_agent:coordinator_agent.py:63 Coordinator Agent initialized
+INFO     interaction_agent:base_agent.py:77 Initialized AI Honeypot Interaction Agent (interaction-694476cd)
+INFO     interaction_agent:interaction_agent.py:46 Interaction Agent initialized with AI-powered interaction engine
+INFO     intelligence_agent:base_agent.py:77 Initialized AI Honeypot Intelligence Agent (intelligence-a8d9c9f3)
+INFO     intelligence_agent:intelligence_agent.py:74 Intelligence Agent initialized with session analysis capabilities
+INFO     detection_agent:base_agent.py:114 Metrics server started on port 9000
+INFO     detection_agent:detection_agent.py:150 Initializing Detection Agent...
+ERROR    config.agentcore_sdk:agentcore_sdk.py:70 Failed to register agent: All connection attempts failed
+WARNING  detection_agent:detection_agent.py:211 Failed to initialize AgentCore SDK, running in standalone mode: All connection attempts failed
+INFO     detection_agent:detection_agent.py:1309 Initializing threat intelligence systems...
+INFO     detection_agent:detection_agent.py:1320 Threat intelligence systems initialized
+INFO     detection_agent:detection_agent.py:167 Detection Agent initialized successfully
+INFO     detection_agent:base_agent.py:129 AI Honeypot Detection Agent started successfully
+ERROR    coordinator_agent:base_agent.py:132 Failed to start agent: [Errno 48] Address already in use
+=============================== warnings summary ===============================
+tests/integration/test_comprehensive_e2e.py::TestComprehensiveE2E::test_complete_threat_lifecycle_ssh
+tests/integration/test_comprehensive_e2e.py::TestComprehensiveE2E::test_complete_threat_lifecycle_ssh
+tests/integration/test_comprehensive_e2e.py::TestComprehensiveE2E::test_complete_threat_lifecycle_ssh
+tests/integration/test_comprehensive_e2e.py::TestComprehensiveE2E::test_complete_threat_lifecycle_ssh
+  /Users/paramdm/Drive/kiroworkspace/AgenticDeception/ai-honeypot-agentcore/agents/base_agent.py:66: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    "last_activity": datetime.utcnow().isoformat(),
+
+tests/integration/test_comprehensive_e2e.py::TestComprehensiveE2E::test_complete_threat_lifecycle_ssh
+tests/integration/test_comprehensive_e2e.py::TestComprehensiveE2E::test_complete_threat_lifecycle_ssh
+tests/integration/test_comprehensive_e2e.py::TestComprehensiveE2E::test_complete_threat_lifecycle_ssh
+tests/integration/test_comprehensive_e2e.py::TestComprehensiveE2E::test_complete_threat_lifecycle_ssh
+  /Users/paramdm/Drive/kiroworkspace/AgenticDeception/ai-honeypot-agentcore/agents/base_agent.py:73: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    self.start_time = datetime.utcnow()
+
+tests/integration/test_comprehensive_e2e.py::TestComprehensiveE2E::test_complete_threat_lifecycle_ssh
+  /Users/paramdm/Drive/kiroworkspace/AgenticDeception/ai-honeypot-agentcore/agents/base_agent.py:120: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    self.state["started_at"] = datetime.utcnow().isoformat()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+ERROR tests/integration/test_comprehensive_e2e.py::TestComprehensiveE2E::test_complete_threat_lifecycle_ssh
+========================= 9 warnings, 1 error in 0.99s =========================
+
+----------------------------------------
+

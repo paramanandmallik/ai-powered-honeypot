@@ -1,0 +1,176 @@
+{
+  "test_schedules": {
+    "continuous": {
+      "enabled": true,
+      "interval_minutes": 15,
+      "test_types": ["basic_functionality", "threat_detection"]
+    },
+    "performance": {
+      "enabled": true,
+      "interval_minutes": 60,
+      "test_types": ["performance_load"]
+    },
+    "comprehensive": {
+      "enabled": true,
+      "interval_minutes": 180,
+      "test_types": ["end_to_end", "security_validation"]
+    },
+    "intelligence": {
+      "enabled": true,
+      "interval_minutes": 45,
+      "test_types": ["intelligence_processing", "attacker_simulation"]
+    }
+  },
+  "test_configurations": {
+    "basic_functionality": {
+      "duration_seconds": 60,
+      "validation_checks": ["agent_health", "message_flow", "database_operations"]
+    },
+    "threat_detection": {
+      "threat_count": 25,
+      "duration_seconds": 120,
+      "threat_types": ["brute_force", "sql_injection", "reconnaissance", "malware"]
+    },
+    "attacker_simulation": {
+      "attack_scenarios": ["ssh_brute_force", "web_admin_attack", "database_attack"],
+      "duration_seconds": 240,
+      "concurrent_attacks": 2
+    },
+    "performance_load": {
+      "concurrent_users": 8,
+      "duration_seconds": 300,
+      "ramp_up_seconds": 30,
+      "performance_targets": {
+        "max_response_time": 2.0,
+        "min_throughput": 15.0,
+        "max_error_rate": 0.03,
+        "max_cpu_usage": 80.0,
+        "max_memory_usage": 75.0
+      }
+    },
+    "intelligence_processing": {
+      "duration_seconds": 180,
+      "test_sessions": 8,
+      "min_techniques_per_session": 2,
+      "min_confidence_score": 0.7
+    },
+    "security_validation": {
+      "duration_seconds": 240,
+      "security_checks": [
+        "network_isolation",
+        "data_protection", 
+        "access_controls",
+        "synthetic_data_validation",
+        "audit_logging"
+      ],
+      "penetration_tests": true
+    },
+    "end_to_end": {
+      "duration_seconds": 900,
+      "full_workflow_test": true,
+      "include_all_components": true,
+      "stress_test_enabled": true
+    }
+  },
+  "reporting": {
+    "output_directory": "reports/automated_tests",
+    "keep_reports_days": 30,
+    "generate_html_reports": true,
+    "generate_charts": true,
+    "email_notifications": {
+      "enabled": false,
+      "recipients": ["security-team@company.com", "devops@company.com"],
+      "smtp_server": "smtp.company.com",
+      "smtp_port": 587,
+      "username": "",
+      "password": "",
+      "send_on_failure": true,
+      "send_daily_summary": true
+    },
+    "slack_notifications": {
+      "enabled": false,
+      "webhook_url": "",
+      "channel": "#honeypot-alerts",
+      "send_on_failure": true
+    }
+  },
+  "failure_handling": {
+    "max_consecutive_failures": 3,
+    "failure_cooldown_minutes": 20,
+    "auto_restart_services": true,
+    "escalation_thresholds": {
+      "critical_failure_count": 5,
+      "performance_degradation_threshold": 0.5,
+      "security_failure_escalation": true
+    },
+    "recovery_actions": {
+      "restart_agents": true,
+      "restart_infrastructure": false,
+      "clear_caches": true,
+      "reset_honeypots": true
+    }
+  },
+  "monitoring": {
+    "metrics_collection": {
+      "enabled": true,
+      "interval_seconds": 30,
+      "metrics": [
+        "response_times",
+        "throughput",
+        "error_rates",
+        "resource_usage",
+        "active_sessions",
+        "threat_detection_rate"
+      ]
+    },
+    "alerting": {
+      "enabled": true,
+      "alert_thresholds": {
+        "response_time_ms": 3000,
+        "error_rate_percent": 5.0,
+        "cpu_usage_percent": 85.0,
+        "memory_usage_percent": 80.0,
+        "disk_usage_percent": 90.0
+      }
+    },
+    "health_checks": {
+      "enabled": true,
+      "interval_seconds": 60,
+      "timeout_seconds": 10,
+      "endpoints": [
+        "http://localhost:8000/health",
+        "http://localhost:8001/health",
+        "http://localhost:8002/health",
+        "http://localhost:8003/health",
+        "http://localhost:8004/health"
+      ]
+    }
+  },
+  "simulation_parameters": {
+    "threat_generation": {
+      "realistic_timing": true,
+      "geographic_distribution": true,
+      "attack_progression": true,
+      "campaign_simulation": true
+    },
+    "attacker_behavior": {
+      "adaptive_tactics": true,
+      "evasion_techniques": true,
+      "persistence_attempts": true,
+      "lateral_movement": true
+    },
+    "honeypot_realism": {
+      "dynamic_responses": true,
+      "contextual_data": true,
+      "behavioral_consistency": true,
+      "error_simulation": true
+    }
+  },
+  "development_mode": {
+    "enabled": true,
+    "debug_logging": true,
+    "detailed_reports": true,
+    "preserve_test_data": true,
+    "mock_external_services": true
+  }
+}

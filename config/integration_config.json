@@ -1,0 +1,156 @@
+{
+  "agentcore": {
+    "endpoint": "https://agentcore.us-east-1.amazonaws.com",
+    "region": "us-east-1",
+    "timeout": 30,
+    "retry_attempts": 3,
+    "health_check_interval": 30
+  },
+  "aws_services": {
+    "region": "us-east-1",
+    "s3_bucket": "ai-honeypot-data-${ENVIRONMENT}",
+    "rds_endpoint": "ai-honeypot-db.cluster-xyz.us-east-1.rds.amazonaws.com",
+    "sns_topic_arn": "arn:aws:sns:us-east-1:123456789012:ai-honeypot-alerts",
+    "cloudwatch_namespace": "AI-Honeypot",
+    "lambda_functions": {
+      "api_handler": "ai-honeypot-api-handler",
+      "intelligence_processor": "ai-honeypot-intelligence-processor",
+      "lifecycle_manager": "ai-honeypot-lifecycle-manager",
+      "security_processor": "ai-honeypot-security-processor"
+    }
+  },
+  "honeypots": {
+    "max_concurrent_sessions": 10,
+    "session_timeout": 3600,
+    "auto_destroy_timeout": 3600,
+    "max_concurrent_honeypots": 20,
+    "network_isolation": true,
+    "synthetic_data_only": true,
+    "honeypot_configs": {
+      "web_admin": {
+        "port_range": "8080-8090",
+        "ssl_enabled": true,
+        "fake_users": 50,
+        "fake_companies": ["TechCorp", "DataSystems", "CloudServices"],
+        "admin_panels": ["admin", "dashboard", "control", "manage"]
+      },
+      "ssh": {
+        "port_range": "2220-2230",
+        "fake_filesystem": true,
+        "command_simulation": true,
+        "fake_users": ["admin", "root", "user", "service"],
+        "fake_processes": 20
+      },
+      "database": {
+        "port_range": "3306,5432",
+        "fake_schemas": ["customers", "orders", "users", "products", "analytics"],
+        "fake_records": 1000,
+        "database_types": ["mysql", "postgresql"]
+      },
+      "file_share": {
+        "protocols": ["smb", "ftp"],
+        "fake_documents": 200,
+        "directory_structure": true,
+        "document_types": ["pdf", "docx", "xlsx", "txt", "csv"]
+      },
+      "email": {
+        "protocols": ["smtp", "imap"],
+        "fake_accounts": 30,
+        "fake_emails": 500,
+        "domains": ["company.com", "corp.local", "internal.net"]
+      }
+    }
+  },
+  "dashboard": {
+    "port": 8080,
+    "host": "0.0.0.0",
+    "auth_required": true,
+    "ssl_enabled": true,
+    "session_timeout": 1800,
+    "max_concurrent_clients": 50,
+    "real_time_updates": true,
+    "websocket_enabled": true
+  },
+  "integration": {
+    "health_check_interval": 30,
+    "flow_timeout": 1800,
+    "max_active_flows": 50,
+    "performance_monitoring_interval": 300,
+    "cleanup_interval": 600,
+    "metrics_retention_hours": 24,
+    "auto_scaling_enabled": true,
+    "emergency_shutdown_timeout": 60
+  },
+  "security": {
+    "network_isolation": true,
+    "real_data_detection": true,
+    "synthetic_data_tagging": true,
+    "audit_logging": true,
+    "encryption_at_rest": true,
+    "encryption_in_transit": true,
+    "access_control": {
+      "mfa_required": true,
+      "session_timeout": 1800,
+      "max_failed_attempts": 3,
+      "lockout_duration": 300
+    }
+  },
+  "monitoring": {
+    "metrics_enabled": true,
+    "logging_level": "INFO",
+    "performance_tracking": true,
+    "alerting_enabled": true,
+    "alert_thresholds": {
+      "high_threat_confidence": 0.9,
+      "max_concurrent_sessions": 8,
+      "error_rate_threshold": 0.05,
+      "response_time_threshold": 5.0
+    }
+  },
+  "agents": {
+    "coordinator": {
+      "instances": 1,
+      "auto_scaling": false,
+      "health_check_interval": 30,
+      "timeout": 60
+    },
+    "detection": {
+      "instances": 2,
+      "auto_scaling": true,
+      "min_instances": 1,
+      "max_instances": 5,
+      "health_check_interval": 15,
+      "timeout": 30
+    },
+    "interaction": {
+      "instances": 3,
+      "auto_scaling": true,
+      "min_instances": 2,
+      "max_instances": 10,
+      "health_check_interval": 15,
+      "timeout": 30
+    },
+    "intelligence": {
+      "instances": 2,
+      "auto_scaling": true,
+      "min_instances": 1,
+      "max_instances": 5,
+      "health_check_interval": 30,
+      "timeout": 120
+    }
+  },
+  "data_retention": {
+    "session_data_days": 90,
+    "intelligence_reports_days": 365,
+    "audit_logs_days": 2555,
+    "metrics_data_days": 30,
+    "archive_to_glacier_days": 30
+  },
+  "compliance": {
+    "gdpr_enabled": true,
+    "data_anonymization": true,
+    "audit_trail_required": true,
+    "data_export_enabled": true,
+    "data_deletion_enabled": true
+  }
+}

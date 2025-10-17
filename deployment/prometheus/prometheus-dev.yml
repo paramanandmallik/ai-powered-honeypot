@@ -1,0 +1,97 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - "/etc/prometheus/rules/*.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+
+scrape_configs:
+  # AgentCore Runtime and Agents
+  - job_name: 'agentcore-runtime'
+    static_configs:
+      - targets: ['mock-agentcore:8000']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  - job_name: 'detection-agent'
+    static_configs:
+      - targets: ['detection-agent:8001']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  - job_name: 'coordinator-agent'
+    static_configs:
+      - targets: ['coordinator-agent:8002']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  - job_name: 'interaction-agent'
+    static_configs:
+      - targets: ['interaction-agent:8003']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  - job_name: 'intelligence-agent'
+    static_configs:
+      - targets: ['intelligence-agent:8004']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  # Infrastructure Services
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+    scrape_interval: 15s
+
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+    scrape_interval: 15s
+
+  - job_name: 'rabbitmq'
+    static_configs:
+      - targets: ['rabbitmq:15692']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+
+  # System Metrics
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    scrape_interval: 15s
+
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+    scrape_interval: 15s
+
+  # Honeypots
+  - job_name: 'ssh-honeypot'
+    static_configs:
+      - targets: ['ssh-honeypot:9090']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  - job_name: 'web-admin-honeypot'
+    static_configs:
+      - targets: ['web-admin-honeypot:9090']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  - job_name: 'database-honeypot'
+    static_configs:
+      - targets: ['database-honeypot:9090']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  # Management Dashboard
+  - job_name: 'dashboard'
+    static_configs:
+      - targets: ['dashboard:8080']
+    metrics_path: '/metrics'
+    scrape_interval: 30s

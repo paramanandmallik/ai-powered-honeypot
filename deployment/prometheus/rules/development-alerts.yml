@@ -1,0 +1,140 @@
+groups:
+  - name: agentcore_development_alerts
+    rules:
+      # Agent Health Alerts
+      - alert: AgentDown
+        expr: up{job=~".*-agent"} == 0
+        for: 30s
+        labels:
+          severity: critical
+          component: agent
+        annotations:
+          summary: "Agent {{ $labels.job }} is down"
+          description: "Agent {{ $labels.job }} has been down for more than 30 seconds"
+
+      - alert: AgentCoreRuntimeDown
+        expr: up{job="agentcore-runtime"} == 0
+        for: 15s
+        labels:
+          severity: critical
+          component: runtime
+        annotations:
+          summary: "AgentCore Runtime is down"
+          description: "AgentCore Runtime has been down for more than 15 seconds"
+
+      # Performance Alerts
+      - alert: HighResponseTime
+        expr: http_request_duration_seconds{quantile="0.95"} > 2
+        for: 1m
+        labels:
+          severity: warning
+          component: performance
+        annotations:
+          summary: "High response time detected"
+          description: "95th percentile response time is {{ $value }}s for {{ $labels.job }}"
+
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.1
+        for: 1m
+        labels:
+          severity: warning
+          component: performance
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value }} for {{ $labels.job }}"
+
+      # Resource Usage Alerts
+      - alert: HighMemoryUsage
+        expr: (container_memory_usage_bytes / container_spec_memory_limit_bytes) > 0.8
+        for: 2m
+        labels:
+          severity: warning
+          component: resources
+        annotations:
+          summary: "High memory usage"
+          description: "Container {{ $labels.name }} memory usage is {{ $value | humanizePercentage }}"
+
+      - alert: HighCPUUsage
+        expr: rate(container_cpu_usage_seconds_total[5m]) > 0.8
+        for: 2m
+        labels:
+          severity: warning
+          component: resources
+        annotations:
+          summary: "High CPU usage"
+          description: "Container {{ $labels.name }} CPU usage is {{ $value | humanizePercentage }}"
+
+      # Infrastructure Alerts
+      - alert: RedisDown
+        expr: up{job="redis"} == 0
+        for: 30s
+        labels:
+          severity: critical
+          component: infrastructure
+        annotations:
+          summary: "Redis is down"
+          description: "Redis has been down for more than 30 seconds"
+
+      - alert: PostgresDown
+        expr: up{job="postgres"} == 0
+        for: 30s
+        labels:
+          severity: critical
+          component: infrastructure
+        annotations:
+          summary: "PostgreSQL is down"
+          description: "PostgreSQL has been down for more than 30 seconds"
+
+      - alert: RabbitMQDown
+        expr: up{job="rabbitmq"} == 0
+        for: 30s
+        labels:
+          severity: critical
+          component: infrastructure
+        annotations:
+          summary: "RabbitMQ is down"
+          description: "RabbitMQ has been down for more than 30 seconds"
+
+      # Honeypot Alerts
+      - alert: HoneypotDown
+        expr: up{job=~".*-honeypot"} == 0
+        for: 1m
+        labels:
+          severity: warning
+          component: honeypot
+        annotations:
+          summary: "Honeypot {{ $labels.job }} is down"
+          description: "Honeypot {{ $labels.job }} has been down for more than 1 minute"
+
+      # Message Queue Alerts
+      - alert: HighMessageQueueDepth
+        expr: rabbitmq_queue_messages > 1000
+        for: 2m
+        labels:
+          severity: warning
+          component: messaging
+        annotations:
+          summary: "High message queue depth"
+          description: "Queue {{ $labels.queue }} has {{ $value }} messages"
+
+      # Session Alerts
+      - alert: TooManyActiveSessions
+        expr: active_sessions_total > 50
+        for: 1m
+        labels:
+          severity: warning
+          component: sessions
+        annotations:
+          summary: "Too many active sessions"
+          description: "There are {{ $value }} active sessions"
+
+      # Intelligence Processing Alerts
+      - alert: IntelligenceProcessingDelay
+        expr: intelligence_processing_delay_seconds > 300
+        for: 2m
+        labels:
+          severity: warning
+          component: intelligence
+        annotations:
+          summary: "Intelligence processing delay"
+          description: "Intelligence processing is delayed by {{ $value }}s"

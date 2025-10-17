@@ -1,0 +1,410 @@
+# AgentCore Runtime Configuration for Coordinator Agent
+# This configuration deploys the Coordinator Agent to Amazon Bedrock AgentCore Runtime
+
+apiVersion: agentcore/v1
+kind: Agent
+metadata:
+  name: ai-honeypot-coordinator-agent
+  namespace: ai-honeypot-system
+  labels:
+    app: ai-honeypot-system
+    component: coordinator
+    version: v1.0.0
+    environment: production
+  annotations:
+    description: "AI-powered coordinator agent for honeypot system orchestration"
+    owner: "security-team"
+    contact: "security-ops@company.com"
+
+spec:
+  # Agent Configuration
+  agent:
+    name: "AI Honeypot Coordinator Agent"
+    description: "Orchestrates the entire honeypot lifecycle and coordinates between all other agents"
+    version: "1.0.0"
+    type: "coordinator"
+    
+    # Agent Capabilities
+    capabilities:
+      - workflow_orchestration
+      - agent_coordination
+      - honeypot_lifecycle_management
+      - resource_management
+      - emergency_procedures
+      - system_monitoring
+    
+    # Runtime Configuration
+    runtime:
+      platform: "bedrock-agentcore"
+      model:
+        provider: "anthropic"
+        model_id: "anthropic.claude-3-5-sonnet-20241022-v2:0"
+        temperature: 0.1
+        max_tokens: 4000
+      
+      # System Prompt
+      system_prompt: |
+        You are the Coordinator Agent in an AI-powered honeypot security system. Your primary role is to orchestrate the entire system lifecycle and coordinate between all other agents.
+
+        Your responsibilities include:
+        1. Managing honeypot creation, configuration, and destruction workflows
+        2. Coordinating communication and workflows between Detection, Interaction, and Intelligence agents
+        3. Making resource allocation and auto-scaling decisions based on system load
+        4. Implementing emergency shutdown procedures and safety controls
+        5. Monitoring system health and performance metrics
+        6. Ensuring proper isolation and security controls are maintained
+
+        You have access to comprehensive tools for:
+        - Creating and managing honeypot instances
+        - Orchestrating multi-agent workflows
+        - Allocating and managing system resources
+        - Monitoring system health and performance
+        - Implementing emergency procedures
+        - Generating alerts and notifications
+
+        Always prioritize security and safety. When in doubt, err on the side of caution and implement appropriate safety measures.
+        Maintain detailed audit logs of all actions and decisions.
+        Respond to emergencies quickly and decisively.
+
+  # Deployment Configuration
+  deployment:
+    # Scaling Configuration
+    replicas:
+      min: 1
+      max: 1  # Coordinator should be singleton
+      target_cpu_utilization: 70
+      target_memory_utilization: 80
+    
+    # Resource Requirements
+    resources:
+      requests:
+        cpu: "1000m"      # 1 CPU core
+        memory: "2Gi"     # 2 GB RAM
+        storage: "10Gi"   # 10 GB storage
+      limits:
+        cpu: "2000m"      # 2 CPU cores max
+        memory: "4Gi"     # 4 GB RAM max
+        storage: "20Gi"   # 20 GB storage max
+    
+    # Health Checks
+    health_check:
+      enabled: true
+      path: "/health"
+      port: 8080
+      initial_delay_seconds: 30
+      period_seconds: 10
+      timeout_seconds: 5
+      failure_threshold: 3
+    
+    # Readiness Probe
+    readiness_probe:
+      enabled: true
+      path: "/ready"
+      port: 8080
+      initial_delay_seconds: 10
+      period_seconds: 5
+      timeout_seconds: 3
+      failure_threshold: 3
+
+  # Environment Configuration
+  environment:
+    variables:
+      # Agent Configuration
+      AGENT_TYPE: "coordinator"
+      AGENT_NAME: "AI Honeypot Coordinator Agent"
+      LOG_LEVEL: "INFO"
+      
+      # AgentCore Runtime Configuration
+      AGENTCORE_RUNTIME_ENABLED: "true"
+      BEDROCK_MODEL_ID: "anthropic.claude-3-5-sonnet-20241022-v2:0"
+      USE_MOCK_AI: "false"
+      
+      # Coordinator-specific Configuration
+      AUTO_SCALING_ENABLED: "true"
+      MAX_CONCURRENT_ENGAGEMENTS: "10"
+      HONEYPOT_TIMEOUT_MINUTES: "60"
+      WORKFLOW_CLEANUP_INTERVAL: "3600"
+      HEALTH_CHECK_INTERVAL: "30"
+      
+      # Resource Limits
+      MAX_HONEYPOTS_PER_TYPE: "5"
+      MAX_TOTAL_HONEYPOTS: "20"
+      MAX_CONCURRENT_WORKFLOWS: "10"
+      
+      # Monitoring Configuration
+      METRICS_PORT: "9090"
+      PROMETHEUS_ENABLED: "true"
+      ALERT_WEBHOOK_URL: ""
+      
+      # Security Configuration
+      EMERGENCY_SHUTDOWN_ENABLED: "true"
+      AUDIT_LOGGING_ENABLED: "true"
+      ENCRYPTION_ENABLED: "true"
+      
+    # Secrets (managed by AgentCore Runtime)
+    secrets:
+      - name: "bedrock-credentials"
+        keys:
+          - "AWS_ACCESS_KEY_ID"
+          - "AWS_SECRET_ACCESS_KEY"
+          - "AWS_SESSION_TOKEN"
+      - name: "honeypot-encryption-keys"
+        keys:
+          - "ENCRYPTION_KEY"
+          - "SIGNING_KEY"
+
+  # Networking Configuration
+  networking:
+    # Service Configuration
+    service:
+      type: "ClusterIP"
+      ports:
+        - name: "http"
+          port: 8080
+          target_port: 8080
+          protocol: "TCP"
+        - name: "metrics"
+          port: 9090
+          target_port: 9090
+          protocol: "TCP"
+    
+    # Ingress Configuration (if needed)
+    ingress:
+      enabled: false
+      annotations:
+        kubernetes.io/ingress.class: "nginx"
+        cert-manager.io/cluster-issuer: "letsencrypt-prod"
+      hosts:
+        - host: "coordinator.honeypot.internal"
+          paths:
+            - path: "/"
+              service_name: "ai-honeypot-coordinator-agent"
+              service_port: 8080
+
+  # Storage Configuration
+  storage:
+    # Persistent Volume for logs and state
+    volumes:
+      - name: "coordinator-data"
+        type: "persistent"
+        size: "10Gi"
+        access_mode: "ReadWriteOnce"
+        mount_path: "/app/data"
+      - name: "coordinator-logs"
+        type: "persistent"
+        size: "5Gi"
+        access_mode: "ReadWriteOnce"
+        mount_path: "/app/logs"
+    
+    # Backup Configuration
+    backup:
+      enabled: true
+      schedule: "0 2 * * *"  # Daily at 2 AM
+      retention_days: 30
+
+  # Monitoring and Observability
+  monitoring:
+    # Metrics Configuration
+    metrics:
+      enabled: true
+      port: 9090
+      path: "/metrics"
+      scrape_interval: "30s"
+      
+      # Custom Metrics
+      custom_metrics:
+        - name: "coordinator_active_workflows"
+          type: "gauge"
+          description: "Number of active workflows"
+        - name: "coordinator_honeypots_managed"
+          type: "gauge"
+          description: "Number of honeypots under management"
+        - name: "coordinator_agent_coordination_requests"
+          type: "counter"
+          description: "Total agent coordination requests"
+        - name: "coordinator_emergency_shutdowns"
+          type: "counter"
+          description: "Total emergency shutdowns triggered"
+    
+    # Logging Configuration
+    logging:
+      level: "INFO"
+      format: "json"
+      output: "stdout"
+      
+      # Log Aggregation
+      aggregation:
+        enabled: true
+        endpoint: "https://logs.company.com/api/v1/logs"
+        api_key_secret: "log-aggregation-api-key"
+    
+    # Tracing Configuration
+    tracing:
+      enabled: true
+      service_name: "ai-honeypot-coordinator"
+      endpoint: "https://tracing.company.com/api/traces"
+      sample_rate: 0.1
+
+  # Security Configuration
+  security:
+    # Pod Security Context
+    pod_security_context:
+      run_as_non_root: true
+      run_as_user: 1000
+      run_as_group: 1000
+      fs_group: 1000
+    
+    # Container Security Context
+    container_security_context:
+      allow_privilege_escalation: false
+      read_only_root_filesystem: true
+      capabilities:
+        drop:
+          - "ALL"
+    
+    # Network Policies
+    network_policy:
+      enabled: true
+      ingress:
+        - from:
+            - namespace_selector:
+                match_labels:
+                  name: "ai-honeypot-system"
+          ports:
+            - protocol: "TCP"
+              port: 8080
+        - from:
+            - namespace_selector:
+                match_labels:
+                  name: "monitoring"
+          ports:
+            - protocol: "TCP"
+              port: 9090
+      egress:
+        - to:
+            - namespace_selector:
+                match_labels:
+                  name: "ai-honeypot-system"
+        - to: []  # Allow external access for AWS services
+          ports:
+            - protocol: "TCP"
+              port: 443
+
+  # Agent Communication Configuration
+  communication:
+    # Message Bus Configuration
+    message_bus:
+      type: "agentcore_native"
+      configuration:
+        max_message_size: "10MB"
+        message_retention: "24h"
+        delivery_guarantee: "at_least_once"
+    
+    # Agent Discovery
+    discovery:
+      enabled: true
+      method: "agentcore_registry"
+      refresh_interval: "30s"
+    
+    # Communication Patterns
+    patterns:
+      - name: "engagement_decision"
+        source: "detection_agent"
+        target: "coordinator_agent"
+        message_type: "engagement_decision"
+        timeout: "30s"
+      - name: "honeypot_ready"
+        source: "coordinator_agent"
+        target: "interaction_agent"
+        message_type: "honeypot_ready"
+        timeout: "60s"
+      - name: "intelligence_request"
+        source: "coordinator_agent"
+        target: "intelligence_agent"
+        message_type: "intelligence_request"
+        timeout: "300s"
+
+  # Workflow Configuration
+  workflows:
+    # Default Workflow Templates
+    templates:
+      - name: "honeypot_lifecycle"
+        description: "Complete honeypot lifecycle management"
+        steps:
+          - name: "validate_configuration"
+            agent: "coordinator"
+            timeout: "30s"
+          - name: "allocate_resources"
+            agent: "coordinator"
+            timeout: "60s"
+            depends_on: ["validate_configuration"]
+          - name: "setup_network_isolation"
+            agent: "coordinator"
+            timeout: "120s"
+            depends_on: ["allocate_resources"]
+          - name: "deploy_honeypot_service"
+            agent: "coordinator"
+            timeout: "180s"
+            depends_on: ["setup_network_isolation"]
+          - name: "configure_monitoring"
+            agent: "coordinator"
+            timeout: "60s"
+            depends_on: ["deploy_honeypot_service"]
+          - name: "initialize_synthetic_data"
+            agent: "interaction"
+            timeout: "120s"
+            depends_on: ["deploy_honeypot_service"]
+          - name: "activate_honeypot"
+            agent: "coordinator"
+            timeout: "30s"
+            depends_on: ["configure_monitoring", "initialize_synthetic_data"]
+      
+      - name: "emergency_response"
+        description: "Emergency response procedures"
+        steps:
+          - name: "isolate_systems"
+            agent: "coordinator"
+            timeout: "60s"
+          - name: "collect_forensics"
+            agent: "intelligence"
+            timeout: "300s"
+            depends_on: ["isolate_systems"]
+          - name: "notify_security_team"
+            agent: "coordinator"
+            timeout: "30s"
+            depends_on: ["isolate_systems"]
+
+  # Integration Configuration
+  integrations:
+    # AWS Services
+    aws:
+      region: "us-west-2"
+      services:
+        s3:
+          bucket: "ai-honeypot-data-${ENVIRONMENT}"
+          encryption: "AES256"
+        cloudwatch:
+          log_group: "/aws/agentcore/ai-honeypot-coordinator"
+          retention_days: 30
+        sns:
+          topic_arn: "arn:aws:sns:us-west-2:ACCOUNT:ai-honeypot-alerts"
+    
+    # External Systems
+    external:
+      siem:
+        enabled: true
+        endpoint: "https://siem.company.com/api/events"
+        api_key_secret: "siem-api-key"
+      
+      threat_intelligence:
+        enabled: true
+        endpoint: "https://threat-intel.company.com/api/indicators"
+        api_key_secret: "threat-intel-api-key"
+
+# AgentCore Runtime Deployment Annotations
+deployment_annotations:
+  agentcore.aws.amazon.com/agent-type: "coordinator"
+  agentcore.aws.amazon.com/system: "ai-honeypot"
+  agentcore.aws.amazon.com/criticality: "high"
+  agentcore.aws.amazon.com/auto-scaling: "enabled"
+  agentcore.aws.amazon.com/monitoring: "comprehensive"

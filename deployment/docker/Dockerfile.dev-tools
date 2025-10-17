@@ -1,0 +1,196 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system dependencies and comprehensive development tools
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    curl \
+    wget \
+    git \
+    vim \
+    nano \
+    htop \
+    iotop \
+    net-tools \
+    telnet \
+    netcat-openbsd \
+    jq \
+    docker.io \
+    docker-compose \
+    redis-tools \
+    postgresql-client \
+    mysql-client \
+    ssh-client \
+    nmap \
+    tcpdump \
+    wireshark-common \
+    build-essential \
+    tree \
+    less \
+    tmux \
+    screen \
+    strace \
+    ltrace \
+    gdb \
+    valgrind \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements and install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Install comprehensive development and testing tools
+RUN pip install --no-cache-dir \
+    ipython \
+    jupyter \
+    jupyterlab \
+    notebook \
+    pytest \
+    pytest-asyncio \
+    pytest-cov \
+    pytest-mock \
+    pytest-xdist \
+    pytest-html \
+    pytest-benchmark \
+    black \
+    flake8 \
+    mypy \
+    isort \
+    bandit \
+    safety \
+    pre-commit \
+    requests \
+    aiohttp \
+    paramiko \
+    psycopg2-binary \
+    mysql-connector-python \
+    redis \
+    pika \
+    docker \
+    locust \
+    faker \
+    factory-boy \
+    matplotlib \
+    seaborn \
+    pandas \
+    numpy \
+    scipy \
+    scikit-learn \
+    plotly \
+    dash \
+    streamlit \
+    prometheus-client \
+    grafana-api \
+    elasticsearch \
+    kibana \
+    loguru \
+    structlog \
+    rich \
+    typer \
+    click \
+    tqdm \
+    memory-profiler \
+    line-profiler \
+    py-spy \
+    asyncio-mqtt \
+    websockets \
+    httpx \
+    trio \
+    anyio
+
+# Copy application code
+COPY . .
+
+# Install development scripts and make them executable
+COPY deployment/scripts/dev-tools.sh /usr/local/bin/dev-tools
+RUN chmod +x /usr/local/bin/dev-tools
+
+# Create comprehensive directory structure for development
+RUN mkdir -p /app/logs /app/data /app/reports /app/sessions \
+    /app/notebooks /app/monitoring /app/testing /app/validation \
+    /app/logs/dev-tools /app/logs/testing /app/logs/monitoring \
+    /app/data/synthetic /app/data/test-results /app/data/benchmarks \
+    /app/reports/coverage /app/reports/performance /app/reports/security \
+    /app/testing/unit /app/testing/integration /app/testing/e2e \
+    /app/validation/security /app/validation/performance /app/validation/functional \
+    /app/monitoring/dashboards /app/monitoring/alerts /app/monitoring/metrics
+
+# Set up enhanced Jupyter configuration for development
+RUN jupyter notebook --generate-config
+RUN echo "c.NotebookApp.ip = '0.0.0.0'" >> /root/.jupyter/jupyter_notebook_config.py && \
+    echo "c.NotebookApp.port = 8888" >> /root/.jupyter/jupyter_notebook_config.py && \
+    echo "c.NotebookApp.token = ''" >> /root/.jupyter/jupyter_notebook_config.py && \
+    echo "c.NotebookApp.password = ''" >> /root/.jupyter/jupyter_notebook_config.py && \
+    echo "c.NotebookApp.allow_root = True" >> /root/.jupyter/jupyter_notebook_config.py && \
+    echo "c.NotebookApp.notebook_dir = '/app/notebooks'" >> /root/.jupyter/jupyter_notebook_config.py && \
+    echo "c.NotebookApp.open_browser = False" >> /root/.jupyter/jupyter_notebook_config.py
+
+# Create JupyterLab configuration
+RUN jupyter lab --generate-config
+RUN echo "c.ServerApp.ip = '0.0.0.0'" >> /root/.jupyter/jupyter_lab_config.py && \
+    echo "c.ServerApp.port = 8889" >> /root/.jupyter/jupyter_lab_config.py && \
+    echo "c.ServerApp.token = ''" >> /root/.jupyter/jupyter_lab_config.py && \
+    echo "c.ServerApp.password = ''" >> /root/.jupyter/jupyter_lab_config.py && \
+    echo "c.ServerApp.allow_root = True" >> /root/.jupyter/jupyter_lab_config.py && \
+    echo "c.ServerApp.root_dir = '/app'" >> /root/.jupyter/jupyter_lab_config.py
+
+# Create development startup script
+RUN echo '#!/bin/bash\n\
+echo "Starting AI Honeypot Development Tools Container"\n\
+echo "Available services:"\n\
+echo "  - Jupyter Notebook: http://localhost:8888"\n\
+echo "  - JupyterLab: http://localhost:8889"\n\
+echo "  - Development Tools: /usr/local/bin/dev-tools"\n\
+echo ""\n\
+echo "Starting Jupyter services in background..."\n\
+nohup jupyter notebook --allow-root > /app/logs/dev-tools/jupyter-notebook.log 2>&1 &\n\
+nohup jupyter lab --allow-root > /app/logs/dev-tools/jupyter-lab.log 2>&1 &\n\
+echo "Services started. Container ready for development."\n\
+tail -f /dev/null\n\
+' > /app/start-dev-services.sh && chmod +x /app/start-dev-services.sh
+
+# Create comprehensive testing script
+RUN echo '#!/bin/bash\n\
+echo "Running comprehensive test suite..."\n\
+\n\
+# Run unit tests with coverage\n\
+echo "Running unit tests..."\n\
+pytest tests/unit/ -v --cov=agents --cov=honeypots --cov=management --cov=security \\\n\
+    --cov-report=html:/app/reports/coverage/html \\\n\
+    --cov-report=xml:/app/reports/coverage/coverage.xml \\\n\
+    --html=/app/reports/coverage/unit-tests.html --self-contained-html\n\
+\n\
+# Run integration tests\n\
+echo "Running integration tests..."\n\
+pytest tests/integration/ -v --html=/app/reports/coverage/integration-tests.html --self-contained-html\n\
+\n\
+# Run security tests\n\
+echo "Running security tests..."\n\
+pytest tests/security/ -v --html=/app/reports/coverage/security-tests.html --self-contained-html\n\
+\n\
+# Run performance benchmarks\n\
+echo "Running performance benchmarks..."\n\
+pytest tests/simulation/performance_tester.py -v --benchmark-only \\\n\
+    --benchmark-html=/app/reports/performance/benchmarks.html\n\
+\n\
+echo "Test suite completed. Reports available in /app/reports/"\n\
+' > /app/run-comprehensive-tests.sh && chmod +x /app/run-comprehensive-tests.sh
+
+# Set environment variables for development
+ENV PYTHONPATH=/app
+ENV PYTHONUNBUFFERED=1
+ENV DEVELOPMENT_MODE=true
+ENV LOG_LEVEL=DEBUG
+ENV JUPYTER_ENABLE_LAB=yes
+
+# Expose ports for development services
+EXPOSE 8888 8889 9000 9001 9002 9003
+
+# Health check for development tools
+HEALTHCHECK --interval=60s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:8888 || curl -f http://localhost:8889 || exit 1
+
+# Start development services
+CMD ["/app/start-dev-services.sh"]

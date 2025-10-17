@@ -1,0 +1,5 @@
+{
+  "httpMethod": "POST",
+  "path": "/api/update",
+  "body": "{\"active_honeypots\": 5, \"total_attacks\": 10, \"total_engagements\": 3, \"honeypots\": [{\"id\": \"hp1\", \"type\": \"web\", \"status\": \"active\"}]}"
+}

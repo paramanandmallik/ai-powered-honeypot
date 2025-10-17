@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2024-01-01T00:00:00.000Z" agent="5.0" etag="xxx" version="22.1.0">
+  <diagram name="AI-Honeypot-Architecture" id="architecture">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1920" pageHeight="1080" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- Title -->
+        <mxCell id="title" value="AI-Powered Honeypot System&#xa;Built on Amazon AgentCore Runtime" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=24;fontStyle=1;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="660" y="20" width="600" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- External Interfaces Layer -->
+        <mxCell id="external-layer" value="External Interfaces" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8F9FA;strokeColor=#E9ECEF;strokeWidth=2;fontSize=16;fontStyle=1;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="80" y="100" width="1760" height="120" as="geometry" />
+        </mxCell>
+        
+        <!-- External Interface Components -->
+        <mxCell id="siem" value="SIEM&#xa;Integration" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#E9ECEF;strokeWidth=2;fontSize=12;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="120" y="140" width="200" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="threats" value="Threat&#xa;Feeds" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#E9ECEF;strokeWidth=2;fontSize=12;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="420" y="140" width="200" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="manual" value="Manual&#xa;Triggers" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#E9ECEF;strokeWidth=2;fontSize=12;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="720" y="140" width="200" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="dashboard" value="Management&#xa;Dashboard" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#E9ECEF;strokeWidth=2;fontSize=12;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="1020" y="140" width="200" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="monitoring" value="Monitoring&#xa;&amp; Alerts" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#E9ECEF;strokeWidth=2;fontSize=12;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="1320" y="140" width="200" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- AgentCore Runtime Platform -->
+        <mxCell id="agentcore-layer" value="AgentCore Runtime Platform" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#4B9CD3;strokeColor=#FF9900;strokeWidth=3;fontSize=18;fontStyle=1;fontColor=#FFFFFF;" vertex="1" parent="1">
+          <mxGeometry x="80" y="260" width="1760" height="400" as="geometry" />
+        </mxCell>
+        
+        <!-- AI Agents -->
+        <mxCell id="agents-section" value="Core AI Agents" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=none;strokeWidth=2;fontSize=14;fontStyle=1;fontColor=#232F3E;opacity=90;" vertex="1" parent="1">
+          <mxGeometry x="120" y="300" width="1680" height="160" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="detection-agent" value="Detection Agent&#xa;&#xa;• Threat Analysis&#xa;• AI Models&#xa;• Confidence Scoring&#xa;• MITRE Mapping" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#FF9900;strokeWidth=2;fontSize=11;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="160" y="320" width="280" height="120" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="coordinator-agent" value="Coordinator Agent&#xa;&#xa;• Honeypot Lifecycle&#xa;• Resource Management&#xa;• Emergency Shutdown&#xa;• System Orchestration" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#FF9900;strokeWidth=2;fontSize=11;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="520" y="320" width="280" height="120" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="interaction-agent" value="Interaction Agent&#xa;&#xa;• Attacker Engagement&#xa;• AI Personas&#xa;• Synthetic Data Gen&#xa;• Real Data Detection" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#FF9900;strokeWidth=2;fontSize=11;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="880" y="320" width="280" height="120" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="intelligence-agent" value="Intelligence Agent&#xa;&#xa;• Session Analysis&#xa;• MITRE ATT&amp;CK Mapping&#xa;• IOC Extraction&#xa;• Report Generation" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#FF9900;strokeWidth=2;fontSize=11;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="1240" y="320" width="280" height="120" as="geometry" />
+        </mxCell>
+        
+        <!-- Runtime Services -->
+        <mxCell id="services-section" value="Runtime Services" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=none;strokeWidth=2;fontSize=14;fontStyle=1;fontColor=#232F3E;opacity=80;" vertex="1" parent="1">
+          <mxGeometry x="120" y="480" width="1680" height="120" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="message-bus" value="Message Bus" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#E9ECEF;strokeWidth=1;fontSize=12;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="200" y="520" width="280" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="workflow" value="Workflow Engine" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#E9ECEF;strokeWidth=1;fontSize=12;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="520" y="520" width="280" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="state-mgmt" value="State Management" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#E9ECEF;strokeWidth=1;fontSize=12;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="840" y="520" width="280" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="auto-scaling" value="Auto Scaling" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#E9ECEF;strokeWidth=1;fontSize=12;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="1160" y="520" width="280" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Honeypot Infrastructure -->
+        <mxCell id="honeypot-layer" value="Honeypot Infrastructure" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8F9FA;strokeColor=#E9ECEF;strokeWidth=2;fontSize=16;fontStyle=1;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="80" y="700" width="1760" height="140" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="web-honeypot" value="Web Admin&#xa;Portal" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#28A745;strokeWidth=2;fontSize=12;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="200" y="740" width="280" height="80" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="ssh-honeypot" value="SSH&#xa;Honeypot" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#28A745;strokeWidth=2;fontSize=12;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="520" y="740" width="280" height="80" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="db-honeypot" value="Database&#xa;Honeypot" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#28A745;strokeWidth=2;fontSize=12;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="840" y="740" width="280" height="80" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="file-honeypot" value="File Share&#xa;Honeypot" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#28A745;strokeWidth=2;fontSize=12;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="1160" y="740" width="280" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- AWS Supporting Services -->
+        <mxCell id="aws-layer" value="AWS Supporting Services" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#232F3E;strokeColor=#232F3E;strokeWidth=2;fontSize=16;fontStyle=1;fontColor=#FFFFFF;" vertex="1" parent="1">
+          <mxGeometry x="80" y="880" width="1760" height="120" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="s3" value="S3&#xa;Storage" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF9900;strokeColor=none;fontSize=12;fontStyle=1;fontColor=#FFFFFF;" vertex="1" parent="1">
+          <mxGeometry x="200" y="920" width="280" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="rds" value="RDS&#xa;Database" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF9900;strokeColor=none;fontSize=12;fontStyle=1;fontColor=#FFFFFF;" vertex="1" parent="1">
+          <mxGeometry x="520" y="920" width="280" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="cloudwatch" value="CloudWatch&#xa;Monitoring" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF9900;strokeColor=none;fontSize=12;fontStyle=1;fontColor=#FFFFFF;" vertex="1" parent="1">
+          <mxGeometry x="840" y="920" width="280" height="60" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="vpc" value="VPC&#xa;Network" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF9900;strokeColor=none;fontSize=12;fontStyle=1;fontColor=#FFFFFF;" vertex="1" parent="1">
+          <mxGeometry x="1160" y="920" width="280" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Connection Arrows -->
+        <mxCell id="arrow1" value="" style="endArrow=classic;html=1;rounded=0;strokeColor=#FF9900;strokeWidth=3;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="960" y="220" as="sourcePoint" />
+            <mxPoint x="960" y="260" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="arrow2" value="" style="endArrow=classic;html=1;rounded=0;strokeColor=#FF9900;strokeWidth=3;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="960" y="660" as="sourcePoint" />
+            <mxPoint x="960" y="700" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="arrow3" value="" style="endArrow=classic;html=1;rounded=0;strokeColor=#FF9900;strokeWidth=3;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="960" y="840" as="sourcePoint" />
+            <mxPoint x="960" y="880" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

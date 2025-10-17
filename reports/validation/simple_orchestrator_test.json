@@ -1,0 +1,46 @@
+{
+  "validation_id": "validation-1760703918",
+  "timestamp": "2025-10-17T12:25:18.886822",
+  "overall_success": true,
+  "overall_score": 86.02216583887736,
+  "phases": [
+    {
+      "phase": "infrastructure_check",
+      "success": true,
+      "score": 95.0,
+      "duration": 9.5367431640625e-07,
+      "required": true,
+      "details": {
+        "python_version": "3.13.7 (main, Aug 14 2025, 11:12:11) [Clang 17.0.0 (clang-1700.0.13.3)]",
+        "platform": "darwin"
+      }
+    },
+    {
+      "phase": "basic_health_check",
+      "success": true,
+      "score": 63.2,
+      "duration": 0.5067620277404785,
+      "required": true,
+      "details": {
+        "cpu_usage": 26.6,
+        "memory_usage": 73.6
+      }
+    },
+    {
+      "phase": "performance_check",
+      "success": true,
+      "score": 99.86649751663208,
+      "duration": 0.00267791748046875,
+      "required": false,
+      "details": {
+        "test_duration": 0.0026700496673583984
+      }
+    }
+  ],
+  "summary": {
+    "total_phases": 3,
+    "successful_phases": 3,
+    "required_phases": 2,
+    "required_success": true
+  }
+}

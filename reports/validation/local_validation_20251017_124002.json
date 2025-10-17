@@ -1,0 +1,177 @@
+{
+  "validation_id": "local-validation-1760704802",
+  "start_time": "2025-10-17T12:40:02.503721",
+  "end_time": null,
+  "overall_success": false,
+  "overall_score": 35.27777777777778,
+  "metadata": {
+    "include_optional": true,
+    "fail_fast": false,
+    "total_phases": 6
+  },
+  "phases": [
+    {
+      "phase": "infrastructure_validation",
+      "success": false,
+      "score": 77.77777777777779,
+      "duration": 0.14060115814208984,
+      "details": {
+        "total_checks": 9,
+        "passed_checks": 7,
+        "docker_status": "failed",
+        "database_status": "validated"
+      },
+      "issues": [
+        "Missing containers: ['honeypot-redis-dev', 'honeypot-postgres-dev', 'honeypot-rabbitmq-dev', 'honeypot-mock-agentcore-dev']",
+        "RabbitMQ validation failed: No module named 'aio_pika'"
+      ],
+      "recommendations": []
+    },
+    {
+      "phase": "deployment_verification",
+      "success": false,
+      "score": 0.0,
+      "duration": 2.288818359375e-05,
+      "details": {},
+      "issues": [
+        "Deployment verification failed: DeploymentStatus.__init__() missing 1 required positional argument: 'end_time'"
+      ],
+      "recommendations": []
+    },
+    {
+      "phase": "security_isolation_verification",
+      "success": false,
+      "score": 0.0,
+      "duration": 2.47955322265625e-05,
+      "details": {},
+      "issues": [
+        "Security isolation verification failed: SecurityValidationReport.__init__() missing 1 required positional argument: 'end_time'"
+      ],
+      "recommendations": []
+    },
+    {
+      "phase": "performance_benchmarking",
+      "success": false,
+      "score": 0.0,
+      "duration": 1.9073486328125e-05,
+      "details": {},
+      "issues": [
+        "Performance benchmarking failed: PerformanceReport.__init__() missing 1 required positional argument: 'end_time'"
+      ],
+      "recommendations": []
+    },
+    {
+      "phase": "integration_testing",
+      "success": false,
+      "score": 60.0,
+      "duration": 0.006637096405029297,
+      "details": {
+        "total_integration_tests": 5,
+        "passed_integration_tests": 3,
+        "test_results": [
+          {
+            "success": true,
+            "message": "Agent communication verified: 4 agents",
+            "agent_count": 4,
+            "agentcore_health": "healthy"
+          },
+          {
+            "success": false,
+            "message": "Honeypot creation failed: HTTP 404"
+          },
+          {
+            "success": true,
+            "message": "Message flow test completed",
+            "message_id": "msg-1760704802",
+            "published": true
+          },
+          {
+            "success": true,
+            "message": "Data persistence test completed",
+            "session_created": true,
+            "session_retrieved": true,
+            "data_matches": true
+          },
+          {
+            "success": false,
+            "message": "Monitoring integration test: 0 services accessible",
+            "accessible_services": [],
+            "total_services": 2
+          }
+        ]
+      },
+      "issues": [
+        "Honeypot creation failed: HTTP 404",
+        "Monitoring integration test: 0 services accessible"
+      ],
+      "recommendations": []
+    },
+    {
+      "phase": "system_health_verification",
+      "success": false,
+      "score": 56.25,
+      "duration": 0.0893700122833252,
+      "details": {
+        "overall_health_score": 56.25,
+        "total_health_checks": 16,
+        "passed_health_checks": 9,
+        "component_health": {
+          "infrastructure": {
+            "health_percentage": 50.0,
+            "total_checks": 4,
+            "passed_checks": 2
+          },
+          "agents": {
+            "health_percentage": 100.0,
+            "total_checks": 5,
+            "passed_checks": 5
+          },
+          "honeypots": {
+            "health_percentage": 0.0,
+            "total_checks": 3,
+            "passed_checks": 0
+          },
+          "integration": {
+            "health_percentage": 50.0,
+            "total_checks": 4,
+            "passed_checks": 2
+          }
+        },
+        "unhealthy_components": [
+          "infrastructure",
+          "honeypots",
+          "integration"
+        ]
+      },
+      "issues": [
+        "Unhealthy component: infrastructure",
+        "Unhealthy component: honeypots",
+        "Unhealthy component: integration"
+      ],
+      "recommendations": []
+    }
+  ],
+  "critical_issues": [
+    "Missing containers: ['honeypot-redis-dev', 'honeypot-postgres-dev', 'honeypot-rabbitmq-dev', 'honeypot-mock-agentcore-dev']",
+    "RabbitMQ validation failed: No module named 'aio_pika'",
+    "Deployment verification failed: DeploymentStatus.__init__() missing 1 required positional argument: 'end_time'",
+    "Security isolation verification failed: SecurityValidationReport.__init__() missing 1 required positional argument: 'end_time'",
+    "Honeypot creation failed: HTTP 404",
+    "Monitoring integration test: 0 services accessible",
+    "Unhealthy component: infrastructure",
+    "Unhealthy component: honeypots",
+    "Unhealthy component: integration"
+  ],
+  "recommendations": [
+    "Check Docker daemon status and container health",
+    "Verify database connections and configurations",
+    "Review infrastructure logs for errors",
+    "Restart failed services and containers",
+    "Check service configuration files",
+    "Verify network connectivity between components",
+    "Review network isolation configuration",
+    "Strengthen security controls and access policies",
+    "Address identified security vulnerabilities",
+    "Optimize system performance and resource usage"
+  ]
+}

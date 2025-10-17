@@ -1,0 +1,363 @@
+/* Additional CSS for AI Honeypot Management Dashboard */
+
+.dashboard-container {
+    min-height: 100vh;
+    background-color: #f8f9fa;
+}
+
+.sidebar {
+    background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+    min-height: 100vh;
+    color: white;
+}
+
+.sidebar .nav-link {
+    color: rgba(255, 255, 255, 0.8);
+    padding: 0.75rem 1rem;
+    border-radius: 0.375rem;
+    margin: 0.25rem 0;
+    transition: all 0.3s ease;
+}
+
+.sidebar .nav-link:hover,
+.sidebar .nav-link.active {
+    color: white;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.main-content {
+    padding: 2rem;
+}
+
+.metric-card {
+    background: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border: 1px solid rgba(0, 0, 0, 0.125);
+    transition: all 0.3s ease;
+}
+
+.metric-card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
+
+.honeypot-status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 0.5rem;
+}
+
+.status-active .honeypot-status-indicator {
+    background-color: #28a745;
+    box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.25);
+}
+
+.status-creating .honeypot-status-indicator {
+    background-color: #ffc107;
+    box-shadow: 0 0 0 2px rgba(255, 193, 7, 0.25);
+    animation: pulse 2s infinite;
+}
+
+.status-destroying .honeypot-status-indicator {
+    background-color: #dc3545;
+    box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.25);
+    animation: pulse 2s infinite;
+}
+
+.status-inactive .honeypot-status-indicator {
+    background-color: #6c757d;
+}
+
+.status-error .honeypot-status-indicator {
+    background-color: #dc3545;
+    animation: blink 1s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 0.7;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes blink {
+    0%, 50% {
+        opacity: 1;
+    }
+    51%, 100% {
+        opacity: 0.3;
+    }
+}
+
+.interaction-timeline {
+    position: relative;
+    padding-left: 2rem;
+}
+
+.interaction-timeline::before {
+    content: '';
+    position: absolute;
+    left: 0.5rem;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, #007bff, #6c757d);
+}
+
+.interaction-item {
+    position: relative;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.interaction-item::before {
+    content: '';
+    position: absolute;
+    left: -1.75rem;
+    top: 1rem;
+    width: 12px;
+    height: 12px;
+    background: #007bff;
+    border-radius: 50%;
+    border: 3px solid white;
+    box-shadow: 0 0 0 2px #007bff;
+}
+
+.threat-score-high {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.threat-score-medium {
+    color: #ffc107;
+    font-weight: bold;
+}
+
+.threat-score-low {
+    color: #28a745;
+    font-weight: bold;
+}
+
+.alert-panel {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.alert-panel .alert {
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.system-health-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.system-health-item:last-child {
+    border-bottom: none;
+}
+
+.health-status {
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.health-healthy {
+    background-color: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+}
+
+.health-warning {
+    background-color: rgba(255, 193, 7, 0.1);
+    color: #ffc107;
+}
+
+.health-critical {
+    background-color: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+}
+
+.health-unknown {
+    background-color: rgba(108, 117, 125, 0.1);
+    color: #6c757d;
+}
+
+.chart-container {
+    position: relative;
+    height: 300px;
+    margin: 1rem 0;
+}
+
+.loading-spinner {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    border-top-color: #007bff;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.websocket-status {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1050;
+}
+
+.connection-indicator {
+    animation: pulse 2s infinite;
+}
+
+.btn-emergency {
+    background: linear-gradient(45deg, #dc3545, #c82333);
+    border: none;
+    color: white;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.btn-emergency:hover {
+    background: linear-gradient(45deg, #c82333, #bd2130);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 0.5rem 1rem rgba(220, 53, 69, 0.25);
+}
+
+.honeypot-card {
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.honeypot-card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
+
+.honeypot-actions {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.honeypot-card:hover .honeypot-actions {
+    opacity: 1;
+}
+
+.mitre-technique {
+    display: inline-block;
+    background: rgba(0, 123, 255, 0.1);
+    color: #007bff;
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    margin: 0.125rem;
+    font-family: monospace;
+}
+
+.command-output {
+    background: #2d3748;
+    color: #e2e8f0;
+    padding: 0.75rem;
+    border-radius: 0.375rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.875rem;
+    overflow-x: auto;
+    white-space: pre-wrap;
+}
+
+.attacker-ip {
+    font-family: monospace;
+    background: rgba(108, 117, 125, 0.1);
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .main-content {
+        padding: 1rem;
+    }
+    
+    .metric-card {
+        margin-bottom: 1rem;
+    }
+    
+    .honeypot-actions {
+        opacity: 1;
+    }
+    
+    .chart-container {
+        height: 250px;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .dashboard-container {
+        background-color: #1a1a1a;
+        color: #e9ecef;
+    }
+    
+    .metric-card {
+        background: #2d3748;
+        border-color: #4a5568;
+        color: #e9ecef;
+    }
+    
+    .interaction-item {
+        background: #2d3748;
+        border-color: #4a5568;
+        color: #e9ecef;
+    }
+}
+
+/* Print styles */
+@media print {
+    .sidebar,
+    .websocket-status,
+    .btn,
+    .honeypot-actions {
+        display: none !important;
+    }
+    
+    .main-content {
+        padding: 0;
+        margin: 0;
+    }
+    
+    .metric-card,
+    .honeypot-card,
+    .interaction-item {
+        break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid #000;
+    }
+}

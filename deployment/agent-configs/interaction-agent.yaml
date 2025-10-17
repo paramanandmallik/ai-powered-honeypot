@@ -1,0 +1,269 @@
+apiVersion: agentcore.amazon.com/v1
+kind: Agent
+metadata:
+  name: ai-honeypot-interaction-agent
+  namespace: ai-honeypot-system
+  labels:
+    app: ai-honeypot
+    component: interaction
+    version: v1.0.0
+spec:
+  description: "AI-Powered Honeypot System - Interaction Agent"
+  runtime:
+    type: python
+    version: "3.11"
+    entrypoint: "main:app"
+    framework: "strands-agents"
+    healthCheck:
+      enabled: true
+      path: "/health"
+      intervalSeconds: 30
+    lifecycle:
+      preStop:
+        exec:
+          command: ["/bin/sh", "-c", "echo 'Graceful shutdown initiated'"]
+      postStart:
+        exec:
+          command: ["/bin/sh", "-c", "echo 'Agent started successfully'"]
+  
+  resources:
+    requests:
+      memory: "1Gi"
+      cpu: "500m"
+    limits:
+      memory: "2Gi"
+      cpu: "1000m"
+  
+  scaling:
+    minReplicas: 3
+    maxReplicas: 20
+    targetCPUUtilizationPercentage: 70
+    scaleUpPolicy:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 60
+    scaleDownPolicy:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 50
+          periodSeconds: 60
+  
+  environment:
+    - name: AWS_REGION
+      value: "us-east-1"
+    - name: LOG_LEVEL
+      value: "INFO"
+    - name: USE_MOCK_AI
+      value: "false"
+    - name: BEDROCK_MODEL_ID
+      value: "anthropic.claude-3-sonnet-20240229-v1:0"
+    - name: MAX_CONCURRENT_SESSIONS
+      value: "10"
+    - name: SESSION_TIMEOUT_MINUTES
+      value: "30"
+    - name: SYNTHETIC_DATA_ENABLED
+      value: "true"
+    - name: REAL_DATA_DETECTION_ENABLED
+      value: "true"
+    - name: PERSONA_CONSISTENCY_ENABLED
+      value: "true"
+  
+  dependencies:
+    - strands-agents>=0.1.0
+    - bedrock-agentcore>=0.1.0
+    - boto3>=1.34.0
+    - fastapi>=0.104.0
+    - pydantic>=2.5.0
+    - httpx>=0.25.0
+    - anthropic>=0.25.0
+    - cryptography>=41.0.0
+    - jinja2>=3.1.0
+  
+  interfaces:
+    input:
+      - name: attacker_interaction
+        type: json
+        schema:
+          type: object
+          properties:
+            session_id:
+              type: string
+            honeypot_type:
+              type: string
+              enum: ["ssh", "web_admin", "database", "file_share", "email"]
+            interaction_type:
+              type: string
+              enum: ["command", "query", "request", "authentication"]
+            content:
+              type: string
+            context:
+              type: object
+            timestamp:
+              type: string
+              format: date-time
+      
+      - name: persona_request
+        type: json
+        schema:
+          type: object
+          properties:
+            persona_type:
+              type: string
+              enum: ["admin", "user", "service_account"]
+            scenario:
+              type: string
+            required_capabilities:
+              type: array
+              items:
+                type: string
+    
+    output:
+      - name: interaction_response
+        type: json
+        schema:
+          type: object
+          properties:
+            session_id:
+              type: string
+            response_content:
+              type: string
+            response_type:
+              type: string
+              enum: ["text", "command_output", "file_content", "error"]
+            synthetic_data_used:
+              type: array
+              items:
+                type: string
+            confidence_score:
+              type: number
+              minimum: 0
+              maximum: 1
+            persona_maintained:
+              type: boolean
+            security_flags:
+              type: array
+              items:
+                type: string
+  
+  communication:
+    protocols:
+      - http
+      - agentcore-messaging
+      - websocket
+      - ssh
+      - smtp
+      - ftp
+    
+    endpoints:
+      - name: process_interaction
+        method: POST
+        path: /interact
+      - name: generate_response
+        method: POST
+        path: /respond
+      - name: create_persona
+        method: POST
+        path: /personas
+      - name: get_session_context
+        method: GET
+        path: /sessions/{session_id}/context
+      - name: emergency_terminate
+        method: POST
+        path: /sessions/{session_id}/terminate
+  
+  messaging:
+    subscriptions:
+      - topic: "honeypot.interaction"
+        handler: "handle_attacker_interaction"
+      - topic: "session.created"
+        handler: "initialize_session_context"
+      - topic: "security.alert"
+        handler: "handle_security_alert"
+      - topic: "synthetic.data.request"
+        handler: "generate_synthetic_data"
+    
+    publications:
+      - topic: "interaction.processed"
+        schema: "interaction_response"
+      - topic: "security.violation"
+        schema: "security_alert"
+      - topic: "session.transcript"
+        schema: "session_data"
+  
+  monitoring:
+    healthCheck:
+      path: /health
+      intervalSeconds: 30
+      timeoutSeconds: 10
+      failureThreshold: 3
+    
+    metrics:
+      - name: active_sessions_total
+        type: gauge
+        description: "Number of active interaction sessions"
+        labels: ["honeypot_type"]
+      - name: interactions_processed_total
+        type: counter
+        description: "Total interactions processed"
+        labels: ["interaction_type", "honeypot_type"]
+      - name: response_generation_time_seconds
+        type: histogram
+        description: "Time taken to generate responses"
+        buckets: [0.1, 0.5, 1.0, 2.0, 5.0]
+      - name: synthetic_data_generated_total
+        type: counter
+        description: "Total synthetic data items generated"
+        labels: ["data_type"]
+      - name: security_violations_total
+        type: counter
+        description: "Total security violations detected"
+        labels: ["violation_type"]
+      - name: persona_consistency_score
+        type: histogram
+        description: "Persona consistency scores"
+        buckets: [0.5, 0.7, 0.8, 0.9, 0.95, 1.0]
+  
+  security:
+    runAsNonRoot: true
+    readOnlyRootFilesystem: true
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    securityContext:
+      fsGroup: 1000
+      runAsUser: 1000
+      runAsGroup: 1000
+  
+  persistence:
+    volumes:
+      - name: logs
+        mountPath: /app/logs
+        size: 2Gi
+        storageClass: gp3
+      - name: session-data
+        mountPath: /app/sessions
+        size: 5Gi
+        storageClass: gp3
+      - name: synthetic-data-cache
+        mountPath: /app/cache
+        size: 1Gi
+        storageClass: gp3
+  
+  networking:
+    ports:
+      - name: http
+        port: 8080
+        protocol: TCP
+      - name: ssh-honeypot
+        port: 2222
+        protocol: TCP
+      - name: smtp-honeypot
+        port: 2525
+        protocol: TCP
+      - name: ftp-honeypot
+        port: 2121
+        protocol: TCP

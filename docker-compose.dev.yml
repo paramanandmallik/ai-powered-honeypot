@@ -1,0 +1,354 @@
+version: '3.8'
+
+services:
+  # Infrastructure Services
+  redis:
+    image: redis:7-alpine
+    container_name: honeypot-redis-dev
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - honeypot-network
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: honeypot-postgres-dev
+    environment:
+      POSTGRES_DB: honeypot_intelligence
+      POSTGRES_USER: honeypot
+      POSTGRES_PASSWORD: honeypot_dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./deployment/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U honeypot"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - honeypot-network
+
+  # Message Bus and State Management
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: honeypot-rabbitmq-dev
+    environment:
+      RABBITMQ_DEFAULT_USER: honeypot
+      RABBITMQ_DEFAULT_PASS: honeypot_dev_password
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - honeypot-network
+
+  # Mock AgentCore Runtime
+  mock-agentcore:
+    build:
+      context: .
+      dockerfile: deployment/docker/Dockerfile.mock-agentcore
+    container_name: honeypot-mock-agentcore-dev
+    ports:
+      - "8000:8000"
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - DATABASE_URL=postgresql://honeypot:honeypot_dev_password@postgres:5432/honeypot_intelligence
+      - RABBITMQ_URL=amqp://honeypot:honeypot_dev_password@rabbitmq:5672/
+      - LOG_LEVEL=DEBUG
+      - DEVELOPMENT_MODE=true
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    volumes:
+      - ./agents:/app/agents
+      - ./config:/app/config
+      - ./logs:/app/logs
+      - ./data:/app/data
+    networks:
+      - honeypot-network
+
+  # AI Agents
+  detection-agent:
+    build:
+      context: .
+      dockerfile: deployment/docker/Dockerfile.detection-agent
+    container_name: honeypot-detection-agent-dev
+    ports:
+      - "8001:8001"
+    environment:
+      - REDIS_URL=redis://redis:6379/1
+      - DATABASE_URL=postgresql://honeypot:honeypot_dev_password@postgres:5432/honeypot_intelligence
+      - RABBITMQ_URL=amqp://honeypot:honeypot_dev_password@rabbitmq:5672/
+      - AGENTCORE_ENDPOINT=http://mock-agentcore:8000
+      - LOG_LEVEL=DEBUG
+      - AGENT_ID=detection-agent-1
+    depends_on:
+      - mock-agentcore
+    volumes:
+      - ./logs:/app/logs
+      - ./data:/app/data
+      - ./config:/app/config
+    networks:
+      - honeypot-network
+    restart: unless-stopped
+
+  coordinator-agent:
+    build:
+      context: .
+      dockerfile: deployment/docker/Dockerfile.coordinator-agent
+    container_name: honeypot-coordinator-agent-dev
+    ports:
+      - "8002:8002"
+    environment:
+      - REDIS_URL=redis://redis:6379/2
+      - DATABASE_URL=postgresql://honeypot:honeypot_dev_password@postgres:5432/honeypot_intelligence
+      - RABBITMQ_URL=amqp://honeypot:honeypot_dev_password@rabbitmq:5672/
+      - AGENTCORE_ENDPOINT=http://mock-agentcore:8000
+      - LOG_LEVEL=DEBUG
+      - AGENT_ID=coordinator-agent-1
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    depends_on:
+      - mock-agentcore
+    volumes:
+      - ./logs:/app/logs
+      - ./data:/app/data
+      - ./config:/app/config
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - honeypot-network
+    restart: unless-stopped
+
+  interaction-agent:
+    build:
+      context: .
+      dockerfile: deployment/docker/Dockerfile.interaction-agent
+    container_name: honeypot-interaction-agent-dev
+    ports:
+      - "8003:8003"
+    environment:
+      - REDIS_URL=redis://redis:6379/3
+      - DATABASE_URL=postgresql://honeypot:honeypot_dev_password@postgres:5432/honeypot_intelligence
+      - RABBITMQ_URL=amqp://honeypot:honeypot_dev_password@rabbitmq:5672/
+      - AGENTCORE_ENDPOINT=http://mock-agentcore:8000
+      - LOG_LEVEL=DEBUG
+      - AGENT_ID=interaction-agent-1
+    depends_on:
+      - mock-agentcore
+    volumes:
+      - ./logs:/app/logs
+      - ./data:/app/data
+      - ./config:/app/config
+      - ./sessions:/app/sessions
+    networks:
+      - honeypot-network
+    restart: unless-stopped
+
+  intelligence-agent:
+    build:
+      context: .
+      dockerfile: deployment/docker/Dockerfile.intelligence-agent
+    container_name: honeypot-intelligence-agent-dev
+    ports:
+      - "8004:8004"
+    environment:
+      - REDIS_URL=redis://redis:6379/4
+      - DATABASE_URL=postgresql://honeypot:honeypot_dev_password@postgres:5432/honeypot_intelligence
+      - RABBITMQ_URL=amqp://honeypot:honeypot_dev_password@rabbitmq:5672/
+      - AGENTCORE_ENDPOINT=http://mock-agentcore:8000
+      - LOG_LEVEL=DEBUG
+      - AGENT_ID=intelligence-agent-1
+    depends_on:
+      - mock-agentcore
+    volumes:
+      - ./logs:/app/logs
+      - ./data:/app/data
+      - ./config:/app/config
+      - ./reports:/app/reports
+    networks:
+      - honeypot-network
+    restart: unless-stopped
+
+  # Honeypot Services
+  ssh-honeypot:
+    build:
+      context: .
+      dockerfile: deployment/docker/Dockerfile.ssh-honeypot
+    container_name: honeypot-ssh-dev
+    ports:
+      - "2222:22"
+    environment:
+      - COORDINATOR_ENDPOINT=http://coordinator-agent:8002
+      - LOG_LEVEL=DEBUG
+    depends_on:
+      - coordinator-agent
+    volumes:
+      - ./logs:/app/logs
+      - ./data/ssh:/app/data
+    networks:
+      - honeypot-network
+      - honeypot-isolated
+    restart: unless-stopped
+
+  web-admin-honeypot:
+    build:
+      context: .
+      dockerfile: deployment/docker/Dockerfile.web-admin-honeypot
+    container_name: honeypot-web-admin-dev
+    ports:
+      - "8080:80"
+      - "8443:443"
+    environment:
+      - COORDINATOR_ENDPOINT=http://coordinator-agent:8002
+      - LOG_LEVEL=DEBUG
+    depends_on:
+      - coordinator-agent
+    volumes:
+      - ./logs:/app/logs
+      - ./data/web-admin:/app/data
+    networks:
+      - honeypot-network
+      - honeypot-isolated
+    restart: unless-stopped
+
+  database-honeypot:
+    build:
+      context: .
+      dockerfile: deployment/docker/Dockerfile.database-honeypot
+    container_name: honeypot-database-dev
+    ports:
+      - "3306:3306"
+      - "5433:5432"
+    environment:
+      - COORDINATOR_ENDPOINT=http://coordinator-agent:8002
+      - LOG_LEVEL=DEBUG
+    depends_on:
+      - coordinator-agent
+    volumes:
+      - ./logs:/app/logs
+      - ./data/database:/app/data
+    networks:
+      - honeypot-network
+      - honeypot-isolated
+    restart: unless-stopped
+
+  # Monitoring and Management
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: honeypot-prometheus-dev
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./deployment/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    networks:
+      - honeypot-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: honeypot-grafana-dev
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_INSTALL_PLUGINS: grafana-clock-panel,grafana-simple-json-datasource
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./deployment/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./deployment/grafana/datasources:/etc/grafana/provisioning/datasources
+    networks:
+      - honeypot-network
+
+  # Management Dashboard
+  dashboard:
+    build:
+      context: .
+      dockerfile: deployment/docker/Dockerfile.dashboard
+    container_name: honeypot-dashboard-dev
+    ports:
+      - "8090:8080"
+    environment:
+      - AGENTCORE_ENDPOINT=http://mock-agentcore:8000
+      - DATABASE_URL=postgresql://honeypot:honeypot_dev_password@postgres:5432/honeypot_intelligence
+      - REDIS_URL=redis://redis:6379/0
+      - DETECTION_AGENT_ENDPOINT=http://detection-agent:8001
+      - COORDINATOR_AGENT_ENDPOINT=http://coordinator-agent:8002
+      - INTERACTION_AGENT_ENDPOINT=http://interaction-agent:8003
+      - INTELLIGENCE_AGENT_ENDPOINT=http://intelligence-agent:8004
+    depends_on:
+      - mock-agentcore
+      - detection-agent
+      - coordinator-agent
+      - interaction-agent
+      - intelligence-agent
+    volumes:
+      - ./management:/app/management
+      - ./static:/app/static
+      - ./templates:/app/templates
+    networks:
+      - honeypot-network
+
+  # Development Tools
+  dev-tools:
+    build:
+      context: .
+      dockerfile: deployment/docker/Dockerfile.dev-tools
+    container_name: honeypot-dev-tools
+    environment:
+      - AGENTCORE_ENDPOINT=http://mock-agentcore:8000
+      - DATABASE_URL=postgresql://honeypot:honeypot_dev_password@postgres:5432/honeypot_intelligence
+      - REDIS_URL=redis://redis:6379/5
+    depends_on:
+      - mock-agentcore
+    volumes:
+      - .:/app/workspace
+      - ./logs:/app/logs
+      - ./data:/app/data
+    networks:
+      - honeypot-network
+    command: tail -f /dev/null  # Keep container running for development
+
+volumes:
+  redis_data:
+  postgres_data:
+  rabbitmq_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  honeypot-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+  honeypot-isolated:
+    driver: bridge
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.21.0.0/16

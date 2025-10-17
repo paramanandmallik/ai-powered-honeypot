@@ -1,0 +1,265 @@
+apiVersion: agentcore.amazon.com/v1
+kind: Agent
+metadata:
+  name: ai-honeypot-intelligence-agent
+  namespace: ai-honeypot-system
+  labels:
+    app: ai-honeypot
+    component: intelligence
+    version: v1.0.0
+spec:
+  description: "AI-Powered Honeypot System - Intelligence Analysis Agent"
+  runtime:
+    type: python
+    version: "3.11"
+    entrypoint: "main:app"
+    framework: "strands-agents"
+    healthCheck:
+      enabled: true
+      path: "/health"
+      intervalSeconds: 30
+    lifecycle:
+      preStop:
+        exec:
+          command: ["/bin/sh", "-c", "echo 'Graceful shutdown initiated'"]
+      postStart:
+        exec:
+          command: ["/bin/sh", "-c", "echo 'Agent started successfully'"]
+  
+  resources:
+    requests:
+      memory: "1Gi"
+      cpu: "500m"
+    limits:
+      memory: "2Gi"
+      cpu: "1000m"
+  
+  scaling:
+    minReplicas: 2
+    maxReplicas: 8
+    targetCPUUtilizationPercentage: 75
+    metrics:
+      - type: Resource
+        resource:
+          name: cpu
+          target:
+            type: Utilization
+            averageUtilization: 75
+      - type: Resource
+        resource:
+          name: memory
+          target:
+            type: Utilization
+            averageUtilization: 80
+  
+  environment:
+    - name: AWS_REGION
+      value: "us-east-1"
+    - name: LOG_LEVEL
+      value: "INFO"
+    - name: USE_MOCK_AI
+      value: "false"
+    - name: BEDROCK_MODEL_ID
+      value: "anthropic.claude-3-sonnet-20240229-v1:0"
+    - name: MITRE_ATTACK_MAPPING
+      value: "true"
+    - name: INTELLIGENCE_BATCH_SIZE
+      value: "10"
+    - name: ANALYSIS_TIMEOUT_SECONDS
+      value: "300"
+    - name: REPORT_GENERATION_ENABLED
+      value: "true"
+    - name: AGENTCORE_RUNTIME_ENDPOINT
+      valueFrom:
+        configMapKeyRef:
+          name: agentcore-config
+          key: runtime-endpoint
+  
+  dependencies:
+    - strands-agents>=0.1.0
+    - bedrock-agentcore>=0.1.0
+    - boto3>=1.34.0
+    - fastapi>=0.104.0
+    - pydantic>=2.5.0
+    - httpx>=0.25.0
+    - anthropic>=0.25.0
+    - prometheus-client>=0.19.0
+    - pandas>=2.0.0
+    - numpy>=1.24.0
+  
+  interfaces:
+    input:
+      - name: session_data
+        type: json
+        schema:
+          type: object
+          properties:
+            session_id:
+              type: string
+              description: "Unique session identifier"
+            honeypot_type:
+              type: string
+              description: "Type of honeypot that generated the session"
+            start_time:
+              type: string
+              format: date-time
+              description: "Session start timestamp"
+            end_time:
+              type: string
+              format: date-time
+              description: "Session end timestamp"
+            interactions:
+              type: array
+              items:
+                type: object
+              description: "List of attacker interactions"
+            attacker_ip:
+              type: string
+              description: "Attacker IP address"
+            session_transcript:
+              type: string
+              description: "Complete session transcript"
+    
+    output:
+      - name: intelligence_report
+        type: json
+        schema:
+          type: object
+          properties:
+            report_id:
+              type: string
+              description: "Unique report identifier"
+            session_id:
+              type: string
+              description: "Associated session identifier"
+            mitre_techniques:
+              type: array
+              items:
+                type: string
+              description: "MITRE ATT&CK technique IDs"
+            iocs:
+              type: array
+              items:
+                type: string
+              description: "Indicators of compromise"
+            confidence_score:
+              type: number
+              minimum: 0
+              maximum: 1
+              description: "Analysis confidence score"
+            threat_assessment:
+              type: string
+              description: "Threat assessment summary"
+            recommendations:
+              type: array
+              items:
+                type: string
+              description: "Security recommendations"
+            analysis_timestamp:
+              type: string
+              format: date-time
+              description: "Analysis completion timestamp"
+  
+  communication:
+    protocols:
+      - http
+      - agentcore-messaging
+    
+    endpoints:
+      - name: analyze_session
+        method: POST
+        path: /analyze
+        description: "Analyze session data and extract intelligence"
+      - name: generate_report
+        method: POST
+        path: /report
+        description: "Generate intelligence report"
+      - name: health_check
+        method: GET
+        path: /health
+        description: "Agent health check endpoint"
+      - name: metrics
+        method: GET
+        path: /metrics
+        description: "Prometheus metrics endpoint"
+      - name: mitre_mapping
+        method: POST
+        path: /mitre
+        description: "Map techniques to MITRE ATT&CK framework"
+  
+  messaging:
+    subscriptions:
+      - topic: "session.completed"
+        handler: "process_completed_session"
+      - topic: "intelligence.request"
+        handler: "handle_intelligence_request"
+      - topic: "system.health_check"
+        handler: "handle_health_check"
+    
+    publications:
+      - topic: "intelligence.report"
+        schema: "intelligence_report"
+      - topic: "threat.assessment"
+        schema: "threat_assessment"
+  
+  monitoring:
+    healthCheck:
+      path: /health
+      intervalSeconds: 30
+      timeoutSeconds: 10
+      failureThreshold: 3
+    
+    readinessProbe:
+      path: /health
+      initialDelaySeconds: 15
+      periodSeconds: 10
+    
+    livenessProbe:
+      path: /health
+      initialDelaySeconds: 30
+      periodSeconds: 30
+    
+    metrics:
+      - name: sessions_analyzed_total
+        type: counter
+        description: "Total number of sessions analyzed"
+        labels: ["honeypot_type", "analysis_result"]
+      - name: intelligence_reports_generated_total
+        type: counter
+        description: "Total number of intelligence reports generated"
+        labels: ["report_type"]
+      - name: analysis_duration_seconds
+        type: histogram
+        description: "Time taken to analyze sessions"
+        buckets: [1, 5, 10, 30, 60, 300]
+      - name: mitre_techniques_identified_total
+        type: counter
+        description: "Total MITRE techniques identified"
+        labels: ["technique_id", "tactic"]
+      - name: iocs_extracted_total
+        type: counter
+        description: "Total IOCs extracted"
+        labels: ["ioc_type"]
+      - name: analysis_confidence_score
+        type: histogram
+        description: "Distribution of analysis confidence scores"
+        buckets: [0.1, 0.3, 0.5, 0.7, 0.9, 1.0]
+  
+  security:
+    runAsNonRoot: true
+    readOnlyRootFilesystem: true
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+  
+  persistence:
+    volumes:
+      - name: logs
+        mountPath: /app/logs
+        size: 2Gi
+        storageClass: gp3
+      - name: intelligence-data
+        mountPath: /app/data
+        size: 5Gi
+        storageClass: gp3

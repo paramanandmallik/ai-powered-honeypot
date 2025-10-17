@@ -1,0 +1,330 @@
+{
+  "timestamp": "2025-10-17T21:33:50.225137",
+  "status": "success",
+  "configurations": {
+    "workflows": {
+      "workflows": [
+        {
+          "name": "threat-detection-workflow",
+          "description": "Main threat detection and response workflow",
+          "agents": [
+            "detection-agent",
+            "coordinator-agent",
+            "interaction-agent",
+            "intelligence-agent"
+          ],
+          "message_routing": {
+            "detection-agent": {
+              "outputs": [
+                "threat-detected",
+                "engagement-decision"
+              ],
+              "targets": [
+                "coordinator-agent"
+              ]
+            },
+            "coordinator-agent": {
+              "inputs": [
+                "threat-detected",
+                "engagement-decision"
+              ],
+              "outputs": [
+                "honeypot-lifecycle",
+                "resource-management"
+              ],
+              "targets": [
+                "interaction-agent",
+                "intelligence-agent"
+              ]
+            },
+            "interaction-agent": {
+              "inputs": [
+                "honeypot-lifecycle"
+              ],
+              "outputs": [
+                "interaction-data",
+                "session-complete"
+              ],
+              "targets": [
+                "intelligence-agent"
+              ]
+            },
+            "intelligence-agent": {
+              "inputs": [
+                "interaction-data",
+                "session-complete"
+              ],
+              "outputs": [
+                "intelligence-report",
+                "mitre-mapping"
+              ],
+              "targets": [
+                "coordinator-agent"
+              ]
+            }
+          }
+        }
+      ],
+      "message_bus": {
+        "type": "bedrock-runtime",
+        "configuration": {
+          "max_message_size": "10MB",
+          "retention_period": "7d",
+          "encryption": "AES-256"
+        }
+      }
+    },
+    "auto_scaling": {
+      "detection-agent": {
+        "PolicyName": "detection-agent-scaling-policy",
+        "ServiceNamespace": "bedrock-agent",
+        "ResourceId": "agent/detection-agent",
+        "ScalableDimension": "bedrock-agent:agent:DesiredCount",
+        "PolicyType": "TargetTrackingScaling",
+        "TargetTrackingScalingPolicyConfiguration": {
+          "TargetValue": 70.0,
+          "PredefinedMetricSpecification": {
+            "PredefinedMetricType": "BedrockAgentCPUUtilization"
+          },
+          "ScaleOutCooldown": 300,
+          "ScaleInCooldown": 600
+        }
+      },
+      "coordinator-agent": {
+        "PolicyName": "coordinator-agent-scaling-policy",
+        "ServiceNamespace": "bedrock-agent",
+        "ResourceId": "agent/coordinator-agent",
+        "ScalableDimension": "bedrock-agent:agent:DesiredCount",
+        "PolicyType": "TargetTrackingScaling",
+        "TargetTrackingScalingPolicyConfiguration": {
+          "TargetValue": 60.0,
+          "PredefinedMetricSpecification": {
+            "PredefinedMetricType": "BedrockAgentCPUUtilization"
+          },
+          "ScaleOutCooldown": 600,
+          "ScaleInCooldown": 900
+        }
+      },
+      "interaction-agent": {
+        "PolicyName": "interaction-agent-scaling-policy",
+        "ServiceNamespace": "bedrock-agent",
+        "ResourceId": "agent/interaction-agent",
+        "ScalableDimension": "bedrock-agent:agent:DesiredCount",
+        "PolicyType": "TargetTrackingScaling",
+        "TargetTrackingScalingPolicyConfiguration": {
+          "TargetValue": 80.0,
+          "PredefinedMetricSpecification": {
+            "PredefinedMetricType": "BedrockAgentCPUUtilization"
+          },
+          "ScaleOutCooldown": 180,
+          "ScaleInCooldown": 300
+        }
+      },
+      "intelligence-agent": {
+        "PolicyName": "intelligence-agent-scaling-policy",
+        "ServiceNamespace": "bedrock-agent",
+        "ResourceId": "agent/intelligence-agent",
+        "ScalableDimension": "bedrock-agent:agent:DesiredCount",
+        "PolicyType": "TargetTrackingScaling",
+        "TargetTrackingScalingPolicyConfiguration": {
+          "TargetValue": 75.0,
+          "PredefinedMetricSpecification": {
+            "PredefinedMetricType": "BedrockAgentCPUUtilization"
+          },
+          "ScaleOutCooldown": 300,
+          "ScaleInCooldown": 600
+        }
+      }
+    },
+    "monitoring": {
+      "alarms": [
+        {
+          "AlarmName": "DetectionAgent-HighCPU",
+          "ComparisonOperator": "GreaterThanThreshold",
+          "EvaluationPeriods": 2,
+          "MetricName": "CPUUtilization",
+          "Namespace": "AWS/BedrockAgent",
+          "Period": 300,
+          "Statistic": "Average",
+          "Threshold": 80.0,
+          "ActionsEnabled": true,
+          "AlarmActions": [
+            "arn:aws:sns:us-east-1:962265335633:honeypot-alerts"
+          ],
+          "AlarmDescription": "Detection Agent CPU utilization is too high",
+          "Dimensions": [
+            {
+              "Name": "AgentName",
+              "Value": "detection-agent"
+            }
+          ]
+        },
+        {
+          "AlarmName": "InteractionAgent-HighLatency",
+          "ComparisonOperator": "GreaterThanThreshold",
+          "EvaluationPeriods": 3,
+          "MetricName": "ResponseTime",
+          "Namespace": "AWS/BedrockAgent",
+          "Period": 300,
+          "Statistic": "Average",
+          "Threshold": 5000.0,
+          "ActionsEnabled": true,
+          "AlarmActions": [
+            "arn:aws:sns:us-east-1:962265335633:honeypot-alerts"
+          ],
+          "AlarmDescription": "Interaction Agent response time is too high",
+          "Dimensions": [
+            {
+              "Name": "AgentName",
+              "Value": "interaction-agent"
+            }
+          ]
+        },
+        {
+          "AlarmName": "CoordinatorAgent-ErrorRate",
+          "ComparisonOperator": "GreaterThanThreshold",
+          "EvaluationPeriods": 2,
+          "MetricName": "ErrorRate",
+          "Namespace": "AWS/BedrockAgent",
+          "Period": 300,
+          "Statistic": "Average",
+          "Threshold": 5.0,
+          "ActionsEnabled": true,
+          "AlarmActions": [
+            "arn:aws:sns:us-east-1:962265335633:honeypot-alerts"
+          ],
+          "AlarmDescription": "Coordinator Agent error rate is too high",
+          "Dimensions": [
+            {
+              "Name": "AgentName",
+              "Value": "coordinator-agent"
+            }
+          ]
+        }
+      ],
+      "dashboards": [
+        {
+          "DashboardName": "HoneypotAgentCore-Monitoring",
+          "DashboardBody": "{\"widgets\": [{\"type\": \"metric\", \"properties\": {\"metrics\": [[\"AWS/BedrockAgent\", \"CPUUtilization\", \"AgentName\", \"detection-agent\"], [\".\", \".\", \".\", \"coordinator-agent\"], [\".\", \".\", \".\", \"interaction-agent\"], [\".\", \".\", \".\", \"intelligence-agent\"]], \"period\": 300, \"stat\": \"Average\", \"region\": \"us-east-1\", \"title\": \"Agent CPU Utilization\"}}, {\"type\": \"metric\", \"properties\": {\"metrics\": [[\"AWS/BedrockAgent\", \"RequestCount\", \"AgentName\", \"detection-agent\"], [\".\", \".\", \".\", \"coordinator-agent\"], [\".\", \".\", \".\", \"interaction-agent\"], [\".\", \".\", \".\", \"intelligence-agent\"]], \"period\": 300, \"stat\": \"Sum\", \"region\": \"us-east-1\", \"title\": \"Agent Request Count\"}}]}"
+        }
+      ]
+    },
+    "cicd": {
+      "pipeline": {
+        "name": "honeypot-agentcore-pipeline",
+        "roleArn": "arn:aws:iam::962265335633:role/CodePipelineServiceRole",
+        "artifactStore": {
+          "type": "S3",
+          "location": "honeypot-agentcore-artifacts-962265335633"
+        },
+        "stages": [
+          {
+            "name": "Source",
+            "actions": [
+              {
+                "name": "SourceAction",
+                "actionTypeId": {
+                  "category": "Source",
+                  "owner": "AWS",
+                  "provider": "S3",
+                  "version": "1"
+                },
+                "configuration": {
+                  "S3Bucket": "honeypot-agentcore-source-962265335633",
+                  "S3ObjectKey": "source.zip"
+                },
+                "outputArtifacts": [
+                  {
+                    "name": "SourceOutput"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Build",
+            "actions": [
+              {
+                "name": "BuildAction",
+                "actionTypeId": {
+                  "category": "Build",
+                  "owner": "AWS",
+                  "provider": "CodeBuild",
+                  "version": "1"
+                },
+                "configuration": {
+                  "ProjectName": "honeypot-agentcore-build"
+                },
+                "inputArtifacts": [
+                  {
+                    "name": "SourceOutput"
+                  }
+                ],
+                "outputArtifacts": [
+                  {
+                    "name": "BuildOutput"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Deploy",
+            "actions": [
+              {
+                "name": "DeployAction",
+                "actionTypeId": {
+                  "category": "Deploy",
+                  "owner": "AWS",
+                  "provider": "BedrockAgent",
+                  "version": "1"
+                },
+                "configuration": {
+                  "AgentName": "honeypot-agents",
+                  "DeploymentConfiguration": "AllAtOnce"
+                },
+                "inputArtifacts": [
+                  {
+                    "name": "BuildOutput"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "buildspec": {
+        "version": "0.2",
+        "phases": {
+          "pre_build": {
+            "commands": [
+              "echo Logging in to Amazon Bedrock Agent Runtime...",
+              "aws bedrock-agent get-agent --agent-id detection-agent || echo 'Agent not found'"
+            ]
+          },
+          "build": {
+            "commands": [
+              "echo Build started on `date`",
+              "echo Building agent packages...",
+              "python3 -m pip install -r requirements.txt",
+              "python3 build_agents.py",
+              "echo Running tests...",
+              "python3 -m pytest tests/"
+            ]
+          },
+          "post_build": {
+            "commands": [
+              "echo Build completed on `date`",
+              "echo Packaging agents for deployment..."
+            ]
+          }
+        },
+        "artifacts": {
+          "files": [
+            "**/*"
+          ]
+        }
+      }
+    }
+  }
+}

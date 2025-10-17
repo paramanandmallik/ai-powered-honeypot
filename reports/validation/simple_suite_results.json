@@ -1,0 +1,27 @@
+{
+  "suite_id": "simple-validation-1760703918",
+  "start_time": "2025-10-17T12:25:13.244135",
+  "end_time": "2025-10-17T12:25:18.888612",
+  "duration": 5.644477,
+  "overall_success": true,
+  "success_rate": 100.0,
+  "test_results": [
+    {
+      "test": "System Health Monitor",
+      "success": true
+    },
+    {
+      "test": "Performance Analyzer",
+      "success": true
+    },
+    {
+      "test": "Validation Orchestrator",
+      "success": true
+    }
+  ],
+  "reports_generated": [
+    "reports/health/simple_health_test.json",
+    "reports/performance/simple_performance_test.json",
+    "reports/validation/simple_orchestrator_test.json"
+  ]
+}
