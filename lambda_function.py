@@ -502,7 +502,7 @@ def lambda_handler(event, context):
             
             try {
                 // Update threats
-                const threats = await fetchData('/api/threats');
+                const threats = await fetchData('/prod/api/threats');
                 if (threats && threats.length > 0) {
                     document.getElementById('threats-count').textContent = threats.length;
                     
@@ -522,7 +522,7 @@ def lambda_handler(event, context):
                 }
                 
                 // Update engagements
-                const engagements = await fetchData('/api/engagements');
+                const engagements = await fetchData('/prod/api/engagements');
                 if (engagements && engagements.length > 0) {
                     document.getElementById('engagements-count').textContent = engagements.length;
                     
@@ -539,7 +539,7 @@ def lambda_handler(event, context):
                 }
                 
                 // Update intelligence
-                const intelligence = await fetchData('/api/intelligence');
+                const intelligence = await fetchData('/prod/api/intelligence');
                 if (intelligence && intelligence.length > 0) {
                     document.getElementById('reports-count').textContent = intelligence.length;
                     
