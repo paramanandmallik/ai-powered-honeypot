@@ -34,6 +34,7 @@ ENV/
 *.swp
 *.swo
 *~
+.kiro/
 
 # OS
 .DS_Store
@@ -99,3 +100,75 @@ aws-config
 .env
 .env.*
 !.env.example
+
+# Test scripts and validation files
+test_*.py
+*_test.py
+run_*_tests.py
+validate_*.py
+comprehensive_validation_suite.py
+local_validation_orchestrator.py
+performance_optimization_analyzer.py
+system_health_monitor.py
+conftest.py
+pytest.ini
+
+# Deployment and fix scripts (keep only essential deployment)
+fix_*.py
+fix_*.sh
+deploy_fixed_*.sh
+deploy_working_*.py
+diagnose_*.py
+force_*.py
+update_dashboard_*.sh
+ultra_simple_*.py
+working_lambda_*.py
+minimal_test_*.py
+simple_dashboard_*.py
+
+# Task implementation summaries
+TASK_*_IMPLEMENTATION_SUMMARY.md
+TASK_*_TESTING_RESULTS.md
+TASK_*_DEPLOYMENT_SUMMARY.md
+task_*_validation_report.json
+
+# Troubleshooting and status files
+TROUBLESHOOTING_*.md
+ACTUAL_DEPLOYMENT_STATUS.md
+GIT_COMMIT_SUMMARY.md
+DASHBOARD_SYNC_README.md
+DASHBOARD_UPDATE_INSTRUCTIONS.md
+MANUAL_LAMBDA_UPDATE.md
+
+# Testing and integration files
+INTEGRATION_TESTING.md
+SECURITY_TESTING_IMPLEMENTATION.md
+TESTING_SIMULATION_FRAMEWORK.md
+
+# Temporary and backup files
+backups/
+dashboard_update.zip
+dashboard_updates.log
+lambda_test_payload.json
+test_payload.json
+
+# Build artifacts
+agentcore_venv/
+lambda_function.zip
+
+# Test logs and reports
+test_logs/
+reports/
+
+# Notebooks
+notebooks/
+
+# Static files (if not needed)
+static/
+
+# AWS dashboard deployment (if separate)
+aws_dashboard_deployment/
+
+# Documentation files (keep only README.md)
+*.md
+!README.md
