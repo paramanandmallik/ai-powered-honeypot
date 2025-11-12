@@ -1,8 +1,0 @@
-{
-  "httpMethod": "POST",
-  "path": "/api/update",
-  "headers": {
-    "Content-Type": "application/json"
-  },
-  "body": "{\"timestamp\": \"2025-10-17T23:45:18.357901\", \"source\": \"test\", \"active_honeypots\": 5, \"total_attacks\": 3, \"total_engagements\": 2, \"honeypots\": [{\"id\": \"test_hp_1\", \"type\": \"web_application\", \"status\": \"active\", \"source_ip\": \"192.168.1.100\"}]}"
-}

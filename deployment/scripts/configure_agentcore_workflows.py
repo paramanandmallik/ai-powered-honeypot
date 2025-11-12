@@ -159,7 +159,7 @@ class AgentCoreWorkflowConfigurator:
                     "Statistic": "Average",
                     "Threshold": 80.0,
                     "ActionsEnabled": True,
-                    "AlarmActions": ["arn:aws:sns:us-east-1:962265335633:honeypot-alerts"],
+                    "AlarmActions": ["arn:aws:sns:us-east-1:YOUR_ACCOUNT_ID:honeypot-alerts"],
                     "AlarmDescription": "Detection Agent CPU utilization is too high",
                     "Dimensions": [
                         {
@@ -178,7 +178,7 @@ class AgentCoreWorkflowConfigurator:
                     "Statistic": "Average",
                     "Threshold": 5000.0,
                     "ActionsEnabled": True,
-                    "AlarmActions": ["arn:aws:sns:us-east-1:962265335633:honeypot-alerts"],
+                    "AlarmActions": ["arn:aws:sns:us-east-1:YOUR_ACCOUNT_ID:honeypot-alerts"],
                     "AlarmDescription": "Interaction Agent response time is too high",
                     "Dimensions": [
                         {
@@ -197,7 +197,7 @@ class AgentCoreWorkflowConfigurator:
                     "Statistic": "Average",
                     "Threshold": 5.0,
                     "ActionsEnabled": True,
-                    "AlarmActions": ["arn:aws:sns:us-east-1:962265335633:honeypot-alerts"],
+                    "AlarmActions": ["arn:aws:sns:us-east-1:YOUR_ACCOUNT_ID:honeypot-alerts"],
                     "AlarmDescription": "Coordinator Agent error rate is too high",
                     "Dimensions": [
                         {
@@ -258,10 +258,10 @@ class AgentCoreWorkflowConfigurator:
         pipeline_config = {
             "pipeline": {
                 "name": "honeypot-agentcore-pipeline",
-                "roleArn": "arn:aws:iam::962265335633:role/CodePipelineServiceRole",
+                "roleArn": "arn:aws:iam::YOUR_ACCOUNT_ID:role/CodePipelineServiceRole",
                 "artifactStore": {
                     "type": "S3",
-                    "location": "honeypot-agentcore-artifacts-962265335633"
+                    "location": "honeypot-agentcore-artifacts-YOUR_ACCOUNT_ID"
                 },
                 "stages": [
                     {
@@ -276,7 +276,7 @@ class AgentCoreWorkflowConfigurator:
                                     "version": "1"
                                 },
                                 "configuration": {
-                                    "S3Bucket": "honeypot-agentcore-source-962265335633",
+                                    "S3Bucket": "honeypot-agentcore-source-YOUR_ACCOUNT_ID",
                                     "S3ObjectKey": "source.zip"
                                 },
                                 "outputArtifacts": [
@@ -423,7 +423,7 @@ def main():
     if results["status"] == "success":
         print("\n✅ Configuration deployment completed successfully!")
         print(f"📊 Dashboard URL: https://srms4z2ke7.execute-api.us-east-1.amazonaws.com/prod/")
-        print(f"🔗 Architecture Diagram: https://honeypot-dashboard-assets-962265335633.s3.amazonaws.com/architecture-diagram.png")
+        print(f"🔗 Architecture Diagram: https://honeypot-dashboard-assets-YOUR_ACCOUNT_ID.s3.amazonaws.com/architecture-diagram.png")
     else:
         print(f"\n❌ Configuration deployment failed: {results.get('error', 'Unknown error')}")
     
